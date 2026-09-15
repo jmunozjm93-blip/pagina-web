@@ -166,10 +166,10 @@ footer{text-align:center; color:var(--muted); font-size:11.5px; padding:14px}
       if(err){ txt.textContent='No se pudo cargar: '+(err&&err.message||err); txt.style.color='#ef4444'; box.classList.remove('espera'); return; }
       pinta(1); box.classList.add('fin'); setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); },500);
     };
-    setTimeout(f, Math.max(0, 1200-(Date.now()-T0)));
+    setTimeout(f, Math.max(0, 3000-(Date.now()-T0)));
   };
   window.addEventListener('error', function(e){ window.__cargaFin(e.error||e.message||'error'); });
-  if('tiempo'==='tiempo'){ var iv=setInterval(function(){ window.__carga(); if(i>=N) clearInterval(iv); }, Math.floor(1000/N)); }
+  if('tiempo'==='tiempo'){ var iv=setInterval(function(){ window.__carga(); if(i>=N) clearInterval(iv); }, Math.floor(2400/N)); }
 })();
 </script>
 <header>
