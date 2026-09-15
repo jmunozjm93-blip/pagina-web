@@ -17,7 +17,6 @@
   .panel .copy { position:relative; z-index:2; width:100%; padding:48px; display:flex; flex-direction:column; gap:14px; }
   .kicker { font-size:.85rem; letter-spacing:.14em; text-transform:uppercase; opacity:.85; }
   h1 { font-size:clamp(3rem,6vw,5.5rem); line-height:.88; font-weight:900; letter-spacing:-.03em; text-transform:uppercase; text-shadow:0 2px 14px rgba(0,0,0,.5); }
-  .sub { font-size:1.05rem; opacity:.9; margin-top:6px; }
   .btn { align-self:flex-start; margin-top:18px; padding:14px 34px; font-weight:700; font-size:1rem; letter-spacing:.02em; transition:transform .2s, box-shadow .2s; }
   .panel:hover .btn { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.25); }
   .logo-top { position:absolute; top:40px; left:48px; z-index:2; }
@@ -32,7 +31,6 @@
   .madden { background:#0b0b0b url("img/steve-madden-hero.jpg") center/cover no-repeat; }
   .madden::before { background:linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.15) 40%,rgba(0,0,0,.78) 100%); }
   .madden:hover::before { background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,.05) 40%,rgba(0,0,0,.7) 100%); }
-  .madden .logo-top { width:min(420px,80%); height:auto; filter:drop-shadow(0 2px 8px rgba(0,0,0,.6)); }
   .madden .btn { background:#fff; color:#111; }
 
   footer { position:fixed; bottom:10px; left:50%; transform:translateX(-50%); z-index:5; font-size:.72rem; color:#ccc; background:rgba(0,0,0,.55); padding:4px 12px; border-radius:999px; white-space:nowrap; }
@@ -51,19 +49,16 @@
 
   <a class="panel converse" href="Dashboard%20sell%20out.html" aria-label="Dashboard Sell Out Converse">
     <div class="copy">
-      <div class="kicker">Sell Out Semanal</div>
+      <div class="kicker">Sell Out</div>
       <h1>Converse</h1>
-      <div class="sub">Calzado, Ropa, Accesorios y Tiendas. Semanas 27 a 37.</div>
       <span class="btn">Dashboard</span>
     </div>
   </a>
 
   <a class="panel madden" href="Dashboard%20Steve%20Madden.html" aria-label="Dashboard Sell Out Steve Madden">
-    <img class="logo-top" src="img/steve-madden-logo.png" alt="Steve Madden">
     <div class="copy">
       <div class="kicker">Sell Out</div>
       <h1>Steve<br>Madden</h1>
-      <div class="sub">Dashboard de la marca Steve Madden.</div>
       <span class="btn">Dashboard</span>
     </div>
   </a>
