@@ -68,7 +68,23 @@
   </a>
 
 </div>
-<footer>Grupo Depor · <a href="cargar.html" style="color:inherit">cargar semana</a></footer>
+<footer>Grupo Depor · <span id="act">Semanas 27–37</span> · <a href="cargar.html" style="color:inherit">cargar semana</a></footer>
+<script>
+// fecha de la última carga y última semana publicada (data/semanas.json)
+(async () => {
+  try {
+    const r = await fetch('data/semanas.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const m = await r.json(), S = m.semanas || {};
+    const wks = Object.keys(S).sort((a, b) => a - b);
+    const fechas = wks.flatMap(w => Object.values(S[w])).filter(Boolean).sort();
+    if (!fechas.length) return;
+    const f = new Date(fechas[fechas.length - 1]);
+    const txt = f.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }) + ' ' + f.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('act').textContent = 'Actualizado el ' + txt + ' · última semana S' + wks[wks.length - 1];
+  } catch (e) { /* sin conexión: se deja el texto fijo */ }
+})();
+</script>
 
 <script>
 (function(){
