@@ -1,4 +1,3 @@
-| `data/wNN/*.json` | `calzado`, `ropa`, `acc`, `tiendas`, `topsuc` de la semana NN (~8 MB en total) y `steve` (Steve Madden, ~110 KB) |# Dashboards Sell Out
 
 Reportes semanales de sell out de Grupo Depor empaquetados como archivos HTML únicos. Se abren con doble clic en cualquier navegador; no necesitan internet, servidor ni Excel.
 
@@ -59,7 +58,7 @@ Las semanas 27–36 siguen embebidas en el HTML; la 37 en adelante se descargan 
 | `js/convertir.js` | Conversión Excel → JSON (misma lógica y mismos redondeos que el HTML original; verificada contra la semana 37) |
 | `js/worker-convertir.js` | Web Worker que lee el Excel sin congelar la pantalla |
 | `data/semanas.json` | Índice de semanas publicadas y qué archivos tiene cada una |
-| `data/wNN/*.json` | `calzado`, `ropa`, `acc`, `tiendas`, `topsuc` de la semana NN (~8 MB en total) |
+| `data/wNN/*.json` | `calzado`, `ropa`, `acc`, `tiendas`, `topsuc` de la semana NN (~8 MB en total) y `steve` (Steve Madden, ~110 KB) |
 
 La app necesita un token de GitHub (fine-grained, permiso *Contents: Read and write* solo sobre este repositorio). Se pega una vez en la app y queda guardado en el navegador.
 
