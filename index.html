@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboards Sell Out</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1a1d21; --muted:#6b7280; --accent:#ea580c; --border:#e5e7eb; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#111418; --card:#1a1f26; --text:#e6e8eb; --muted:#9aa3ad; --border:#2a313a; } }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); padding:48px 16px; }
+  main { max-width:760px; margin:0 auto; }
+  h1 { font-size:1.75rem; margin:0 0 8px; }
+  p.lead { color:var(--muted); margin:0 0 32px; }
+  .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }
+  a.card { display:block; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px 22px; text-decoration:none; color:inherit; transition:border-color .15s, transform .15s; }
+  a.card:hover { border-color:var(--accent); transform:translateY(-2px); }
+  a.card h2 { font-size:1.1rem; margin:0 0 6px; }
+  a.card p { margin:0; color:var(--muted); font-size:.92rem; }
+  a.card .size { display:inline-block; margin-top:12px; font-size:.78rem; color:var(--muted); background:var(--bg); border-radius:999px; padding:3px 10px; }
+  footer { margin-top:40px; color:var(--muted); font-size:.85rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Dashboards Sell Out</h1>
+  <p class="lead">Reportes semanales de sell out en un solo archivo HTML. Se abren directo en el navegador, sin Excel.</p>
+  <div class="grid">
+    <a class="card" href="Dashboard%20sell%20out.html">
+      <h2>Sell Out Semanal</h2>
+      <p>Calzado, Ropa, Accesorios y Tiendas. Semanas 27 a 37, filtros múltiples, alertas y top‑5 de sucursales.</p>
+      <span class="size">79 MB · puede tardar en cargar</span>
+    </a>
+    <a class="card" href="Dashboard%20Steve%20Madden.html">
+      <h2>Steve Madden — Sell Out</h2>
+      <p>Dashboard de la marca Steve Madden.</p>
+      <span class="size">1,4 MB</span>
+    </a>
+  </div>
+  <footer>Grupo Depor · actualizado al 15 de septiembre de 2026</footer>
+</main>
+</body>
+</html>
