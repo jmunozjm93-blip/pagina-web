@@ -228,7 +228,7 @@ Entre el 8 y el 15 de septiembre el entorno Linux donde corren los scripts estuv
 
 ---
 
-## 11. Pipeline semanal en GitHub (desde la semana 38)
+## 11. Pipeline semanal en GitHub (desde la semana 37)
 
 Estado al 15 de septiembre de 2026. `build.py` y `template_v2.html` ya no existen (vivían en el entorno Linux de Claude). Los reemplaza un conversor en JavaScript que corre en el navegador.
 
@@ -238,7 +238,7 @@ Estado al 15 de septiembre de 2026. `build.py` y `template_v2.html` ya no existe
 cargar.html  →  js/convertir.js (en un Web Worker)  →  data/wNN/*.json  →  GitHub  →  el dashboard los descarga
 ```
 
-- El HTML sigue trayendo embebidas las semanas 27–37. **No se recompila.**
+- El HTML trae embebidas las semanas 27–36 (la 37 se quitó el 15-09-2026 para cargarla por el flujo nuevo). **No se recompila.**
 - Cada semana nueva son 5 JSON en `data/wNN/` (`calzado`, `ropa`, `acc`, `tiendas`, `topsuc`, ~8 MB) más su registro en `data/semanas.json`.
 - Al abrir, el dashboard lee `data/semanas.json`, descarga la última semana publicada y la deja como semana por defecto. Las demás semanas publicadas aparecen en el selector con ☁ y se descargan al elegirlas (también desde el filtro Semana de TIENDAS).
 - Abierto con doble clic (`file://`) no hay `fetch`: se ve solo lo embebido.
