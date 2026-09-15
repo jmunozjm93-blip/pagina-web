@@ -225,3 +225,39 @@ Las reservas se actualizan cuando llega un archivo nuevo, y se aplican a todas l
 ## 10. Nota sobre el entorno
 
 Entre el 8 y el 15 de septiembre el entorno Linux donde corren los scripts estuvo caído por una actualización de Windows, y no se podían procesar Excel ni recompilar el archivo. Durante ese lapso sí se pudo parchear el HTML ya construido con las herramientas de archivo, que es como se aplicaron las columnas fijas de TIENDAS.
+
+---
+
+## 11. Pipeline semanal en GitHub (desde la semana 38)
+
+Estado al 15 de septiembre de 2026. `build.py` y `template_v2.html` ya no existen (vivían en el entorno Linux de Claude). Los reemplaza un conversor en JavaScript que corre en el navegador.
+
+### Cómo queda
+
+```
+cargar.html  →  js/convertir.js (en un Web Worker)  →  data/wNN/*.json  →  GitHub  →  el dashboard los descarga
+```
+
+- El HTML sigue trayendo embebidas las semanas 27–37. **No se recompila.**
+- Cada semana nueva son 5 JSON en `data/wNN/` (`calzado`, `ropa`, `acc`, `tiendas`, `topsuc`, ~8 MB) más su registro en `data/semanas.json`.
+- Al abrir, el dashboard lee `data/semanas.json`, descarga la última semana publicada y la deja como semana por defecto. Las demás semanas publicadas aparecen en el selector con ☁ y se descargan al elegirlas (también desde el filtro Semana de TIENDAS).
+- Abierto con doble clic (`file://`) no hay `fetch`: se ve solo lo embebido.
+- Los Excel no se suben (60 y 52 MB semanales; GitHub no lo aguanta). Se guardan en `Archivos sell out/WNN/`, carpeta ignorada por git.
+
+### Qué hace el conversor (verificado campo por campo contra la W37 embebida)
+
+- Líneas de producto: 6 hojas, bloques por cliente, `[vtaUN, rotación, margen, stock, semanas, vtaNeta]`, redondeo a 4 decimales con la regla del par de Python. Dinámica anidada Modelo > Departamento Interno (calzado): las filas sin modelo heredan el modelo y sus atributos. Atributos vacíos en una hoja se completan con los de otra hoja del mismo archivo. Precio 0 = sin precio (toma el del catálogo).
+- `gt`: solo clientes con algún valor distinto de cero. `_TOTAL`: suma de UN, $ y stock; rotación y margen ponderados por venta **sobre el total completo** (un cliente sin indicador pesa 0); semanas de stock ponderadas por stock **solo de los clientes que traen semanas**, o stock/venta si ninguno trae.
+- TIENDAS: relleno jerárquico con reset (el nivel más a la izquierda con valor es el que cambió; los de su derecha se toman de la fila aunque estén vacíos). Solo las filas de la semana. Diccionario propio por archivo; el dashboard lo traduce al suyo al cargar.
+- Top‑5: solo filas con `Vta UN ≠ 0` (las devoluciones cuentan), orden venta UN desc y nombre de sucursal asc, venta neta redondeada por fila antes de sumar. El acumulado se recalcula completo desde el archivo (trae todas las semanas) y reemplaza al anterior.
+- Las filas de las semanas nuevas llevan los atributos inline (no dependen del catálogo `CAT`, que sigue rellenando `bo/kam/reg`).
+
+### Lo que no se actualiza con las semanas nuevas
+
+- `DATA_SUCDET` / `DATA_SUCFILTRO` (filtro Tienda de Calzado): estaban obsoletos; para semanas 38+ ese filtro queda vacío.
+- Reservas (`bo`, `kam`, `reg`) e imágenes (`IMG`): siguen siendo las embebidas. Un modelo nuevo sin foto muestra el ícono.
+- Dashboard Steve Madden: sigue siendo un HTML aparte (`Reporte Steve madden WNN.xlsx` no entra en este pipeline).
+
+### Diferencias conocidas con la W37 embebida
+
+Al reconvertir la W37 desde los Excel de hoy: métricas idénticas en las 3 líneas y en TIENDAS (24.116 filas). En Top‑5, Falabella/Ripley/Paris difieren porque esos retailers restatan datos y el Excel actual ya no es el que se usó para construir el HTML. 25 filas de ropa `.com` traían atributos vacíos que el original resolvía con el catálogo (NEW) y el conversor con las otras hojas del mismo archivo (OLD).

@@ -10,3 +10,7 @@ desktop.ini
 # Temporales
 *.tmp
 *.log
+
+# Excel semanales y fotos: se quedan en el PC, no en GitHub
+Archivos sell out/
+FTW/
