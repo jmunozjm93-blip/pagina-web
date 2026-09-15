@@ -261,3 +261,7 @@ cargar.html  →  js/convertir.js (en un Web Worker)  →  data/wNN/*.json  → 
 ### Diferencias conocidas con la W37 embebida
 
 Al reconvertir la W37 desde los Excel de hoy: métricas idénticas en las 3 líneas y en TIENDAS (24.116 filas). En Top‑5, Falabella/Ripley/Paris difieren porque esos retailers restatan datos y el Excel actual ya no es el que se usó para construir el HTML. 25 filas de ropa `.com` traían atributos vacíos que el original resolvía con el catálogo (NEW) y el conversor con las otras hojas del mismo archivo (OLD).
+
+### Steve Madden (agregado el 15-09-2026)
+
+`Reporte Steve madden WNN.xlsx` (hojas **SKU** y **Tienda**, trae todas las semanas) entra por el mismo `cargar.html` y genera `data/wNN/steve.json` con lo que el dashboard de Steve Madden guarda por semana: `alldata` (CALZADO y ACC: filas con `r.PARIS = [vtaUN, rot, margen, stock, semanas, vtaNeta, vtaUN LY, vtaNeta LY]` y `gt`), `tiendas` (un registro por sucursal × línea), `sucs` y `stores` (detalle por sucursal por modelo). Criterios del dashboard: rotación = venta ÷ (venta + stock), semanas = (venta + stock) ÷ venta, margen ponderado por venta neta; en `stores` entran las filas con unidades o stock. El dashboard de Steve Madden descarga al abrir todas las semanas publicadas (son livianas) y muestra la más nueva por defecto. Verificado contra la W37 embebida: tiendas y detalle idénticos; en SKU el archivo nuevo trae LY (el original lo tenía en 0) y algunos modelos más.

@@ -1,4 +1,4 @@
-# Dashboards Sell Out
+| `data/wNN/*.json` | `calzado`, `ropa`, `acc`, `tiendas`, `topsuc` de la semana NN (~8 MB en total) y `steve` (Steve Madden, ~110 KB) |# Dashboards Sell Out
 
 Reportes semanales de sell out de Grupo Depor empaquetados como archivos HTML únicos. Se abren con doble clic en cualquier navegador; no necesitan internet, servidor ni Excel.
 
@@ -47,7 +47,7 @@ Detalle completo en [`RESUMEN PROYECTO.md`](RESUMEN%20PROYECTO.md).
 ## Rutina semanal (desde la semana 37)
 
 1. Abrir **https://jmunozjm93-blip.github.io/pagina-web/cargar.html** (también hay un enlace "cargar semana" al pie de la portada).
-2. Arrastrar los 5 Excel de la semana, uno por uno. La app valida el nombre (`Reporte de zapatilla SellOut w38.xlsx`, etc.), la estructura de las hojas y que el contenido sea de esa semana; luego los convierte a JSON en el navegador.
+2. Arrastrar los 6 Excel de la semana (5 de sell out + `Reporte Steve madden WNN.xlsx`), uno por uno. La app valida el nombre (`Reporte de zapatilla SellOut w38.xlsx`, etc.), la estructura de las hojas y que el contenido sea de esa semana; luego los convierte a JSON en el navegador.
 3. Pulsar **Subir a GitHub** en cada uno. El JSON queda en `data/w38/` y la semana se registra en `data/semanas.json`.
 4. En 1–2 minutos el dashboard muestra la semana nueva. Los Excel no se suben: se quedan en el PC (carpeta `Archivos sell out/`, ignorada por git).
 

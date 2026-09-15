@@ -12,6 +12,7 @@
     { tipo: 'acc',     re: /^Reporte de Accesorios SellOut\s*w\s*(\d{1,2})\.*\.xlsx$/i, etiqueta: 'Reporte de Accesorios SellOut WNN.xlsx' },
     { tipo: 'tiendas', re: /^Reporte por tienda\s*w\s*(\d{1,2})\.*\.xlsx$/i,           etiqueta: 'Reporte por tienda wNN.xlsx' },
     { tipo: 'topsuc',  re: /^reporte por SKU por tienda\s*w\s*(\d{1,2})\.*\.xlsx$/i,   etiqueta: 'reporte por SKU por tienda wNN.xlsx' },
+    { tipo: 'steve',   re: /^Reporte Steve madden\s*w\s*(\d{1,2})\.*\.xlsx$/i,         etiqueta: 'Reporte Steve madden WNN.xlsx' },
   ];
   function identificar(nombre) {
     for (const t of TIPOS) { const m = nombre.match(t.re); if (m) return { tipo: t.tipo, semana: String(+m[1]) }; }
@@ -284,9 +285,133 @@
     return { W: { [String(semana)]: W }, ACC: ACC2, accWeeks };
   }
 
+  // ---------- Steve Madden (Reporte Steve madden WNN: hojas SKU y Tienda) ----------
+  // El dashboard de Steve Madden guarda por semana: ALLDATA por línea, TIENDAS por cliente, STORES por modelo.
+  const SM_LINEA = { 'CALZADO': '👟 CALZADO', 'ACCESORIOS': '🧢 ACC' };
+  // métricas del bloque por cliente en la hoja SKU: [vtaUN, rot, margen, stock, semanas, vtaNeta, vtaUN LY, vtaNeta LY]
+  const SM_MET = { 'vtaun': 0, 'rotacionun': 1, 'margen': 2, 'stockactualun': 3, 'semanasdestock': 4, 'vtaneta': 5, 'vtaunly': 6, 'vtanetaly': 7 };
+  const SM_ATTR = { 'modelo': 'm', 'nrosemana': 'w', 'descripcion': 'd', 'linea': 'linea', 'status': 'st', 'duracion': 'du',
+                    'temporada': 'te', 'grupogenero': 'g', 'marca': 'b', 'tipo': 'tp', 'nombresucursal': 's' };
+  const smRot = (v, stk) => (v + stk) > 0 ? r4(v / (v + stk)) : null;
+  const smWos = (v, stk) => v > 0 ? r4((v + stk) / v) : null;
+
+  // encabezados + bloques por cliente de una hoja de Steve Madden
+  function smCabecera(rows, nombre, primera) {
+    const h = rows.findIndex(r => r && norm(r[0]) === primera);
+    if (h < 0) throw new Error(`Hoja "${nombre}": no encontré la fila de encabezados (columna A = "${primera}")`);
+    const hdr = rows[h], retRow = rows[h - 1] || [];
+    const attr = {}, blocks = [];
+    let cur = null;
+    for (let c = 0; c < hdr.length; c++) {
+      const hn = norm(hdr[c]); if (!hn) continue;
+      if (hn.startsWith('total')) break;
+      const rn = txt(retRow[c]);
+      if (rn && !/^total/i.test(rn)) { cur = { ret: rn, cols: [] }; blocks.push(cur); }
+      if (cur) { const mi = SM_MET[hn]; if (mi !== undefined) cur.cols.push([c, mi]); }
+      else if (SM_ATTR[hn]) attr[SM_ATTR[hn]] = c;
+    }
+    if (attr.m === undefined || attr.w === undefined) throw new Error(`Hoja "${nombre}": faltan las columnas Modelo / Nro Semana`);
+    if (!blocks.length) throw new Error(`Hoja "${nombre}": no encontré bloques por cliente`);
+    return { h, attr, blocks };
+  }
+
+  function parseSteve(wb, semana) {
+    const skuName = wb.SheetNames.find(n => norm(n) === 'sku'), tieName = wb.SheetNames.find(n => norm(n) === 'tienda');
+    if (!skuName || !tieName) throw new Error(`Se esperaban las hojas "SKU" y "Tienda". Hojas: ${wb.SheetNames.join(', ')}`);
+    const W = String(semana);
+
+    // --- hoja SKU: Modelo > Nro Semana, una fila por semana ---
+    const rows = filasDe(wb.Sheets[skuName]);
+    const { h, attr, blocks } = smCabecera(rows, skuName, 'modelo');
+    const porLinea = {};
+    let prevM = '', prevAttrs = {}, sinLinea = 0, semanasVistas = new Set();
+    for (let i = h + 1; i < rows.length; i++) {
+      const row = rows[i]; if (!row) continue;
+      if (norm(row[0]) === 'totalgeneral') break;
+      if (row.every(vacio)) continue;
+      const m = txt(row[attr.m]) || prevM; if (!m) continue;
+      if (txt(row[attr.m])) { prevM = m; prevAttrs = {}; for (const k of ['d', 'st', 'du', 'te', 'g', 'b', 'tp']) if (attr[k] !== undefined && !vacio(row[attr[k]])) prevAttrs[k] = txt(row[attr[k]]); }
+      const w = txt(row[attr.w]); if (w) semanasVistas.add(String(+w));
+      if (String(+w) !== W) continue;
+      const ln = SM_LINEA[txt(row[attr.linea]).toUpperCase()];
+      if (!ln) { sinLinea++; continue; }
+      // las filas de semanas siguientes del mismo modelo pueden venir sin atributos: se heredan
+      const o = Object.assign({ m }, prevAttrs);
+      for (const k of ['d', 'st', 'du', 'te', 'g', 'b', 'tp']) if (attr[k] !== undefined && !vacio(row[attr[k]])) o[k] = txt(row[attr[k]]);
+      o.r = {};
+      for (const b of blocks) {
+        const a = [0, null, null, 0, null, 0, 0, 0];
+        let any = false;
+        const raw = [0, null, null, 0, null, 0, 0, 0];
+        for (const [col, mi] of b.cols) { const v = row[col]; if (!vacio(v)) { any = true; raw[mi] = num(v); a[mi] = r4(raw[mi]); } }
+        // rotación y semanas de stock con el criterio del dashboard (stock inicial = stock + venta)
+        a[1] = smRot(a[0] || 0, a[3] || 0); a[4] = smWos(a[0] || 0, a[3] || 0);
+        o._raw = o._raw || {}; o._raw[b.ret] = raw;
+        if (any) o.r[b.ret] = a;
+      }
+      const L = (porLinea[ln] = porLinea[ln] || { retailers: blocks.map(b => b.ret), rows: [] });
+      L.rows.push(o);
+    }
+    if (!Object.keys(porLinea).length) throw new Error(`Hoja "SKU": no hay filas con Nro Semana = ${W} (semanas en el archivo: ${[...semanasVistas].sort((a, b) => a - b).join(', ')})`);
+    // totales por cliente y total general, con las fórmulas del dashboard
+    for (const ln in porLinea) {
+      const L = porLinea[ln], gt = {};
+      const acum = {};
+      for (const r of L.rows) for (const ret in r.r) {
+        const a = (r._raw && r._raw[ret]) || r.r[ret], t = (acum[ret] = acum[ret] || { v: 0, stk: 0, vn: 0, uly: 0, vnly: 0, mgW: 0, mgV: 0 });
+        t.v += a[0] || 0; t.stk += a[3] || 0; t.vn += a[5] || 0; t.uly += a[6] || 0; t.vnly += a[7] || 0;
+        if (a[2] != null && (a[5] || 0)) { t.mgW += a[2] * (a[5] || 0); t.mgV += a[5] || 0; }
+      }
+      const tot = { v: 0, stk: 0, vn: 0, uly: 0, vnly: 0, mgW: 0, mgV: 0 };
+      const cerrar = t => [t.v, smRot(t.v, t.stk), t.mgV ? r4(t.mgW / t.mgV) : null, t.stk, smWos(t.v, t.stk), r4(t.vn), t.uly, r4(t.vnly)];
+      for (const ret of L.retailers) { const t = acum[ret]; if (!t) continue; gt[ret] = cerrar(t); for (const k in tot) tot[k] += t[k]; }
+      gt._TOTAL = cerrar(tot);
+      for (const r of L.rows) delete r._raw;
+      L.gt = gt;
+    }
+
+    // --- hoja Tienda: Nombre Sucursal > Nro Semana > Modelo ---
+    const trows = filasDe(wb.Sheets[tieName]);
+    const T = smCabecera(trows, tieName, 'nombresucursal');
+    const nestCols = [T.attr.s, T.attr.w];
+    const sucSet = new Set(), recsAcum = {}, stores = {};
+    let prev = null;
+    for (let i = T.h + 1; i < trows.length; i++) {
+      const row = trows[i]; if (!row) continue;
+      if (norm(row[0]) === 'totalgeneral') break;
+      const d = rellenar(row, nestCols, prev); prev = d;
+      const s = d[0], w = d[1] ? String(+d[1]) : '';
+      if (!s) continue;
+      sucSet.add(s);
+      if (w !== W) continue;
+      const m = txt(row[T.attr.m]).toUpperCase(); if (!m) continue;
+      const linea = txt(row[T.attr.linea]).toUpperCase(), marca = txt(row[T.attr.b]);
+      for (const b of T.blocks) {
+        let any = false; const a = [0, null, null, 0, null, 0, 0, 0];
+        for (const [col, mi] of b.cols) { const v = row[col]; if (!vacio(v)) { any = true; a[mi] = num(v); } }   // valores crudos: se redondea al cerrar
+        if (!any) continue;
+        const key = b.ret + '' + s + '' + linea;
+        const t = (recsAcum[key] = recsAcum[key] || { ret: b.ret, s, linea, marca, v: 0, vn: 0, stk: 0, mgW: 0, mgV: 0 });
+        t.v += a[0] || 0; t.vn += a[5] || 0; t.stk += a[3] || 0;
+        if (a[2] != null && (a[5] || 0)) { t.mgW += a[2] * (a[5] || 0); t.mgV += a[5] || 0; }
+        // en el detalle por sucursal entran las filas con unidades o stock (una venta neta sola es un ajuste)
+        if ((a[0] || 0) || (a[3] || 0)) (stores[m] = stores[m] || []).push([s, a[0] || 0, r4(a[5] || 0), a[3] || 0]);
+      }
+    }
+    const sucs = [...sucSet].sort();
+    const tiendas = {};
+    for (const key in recsAcum) {
+      const t = recsAcum[key];
+      const R = (tiendas[t.ret] = tiendas[t.ret] || { recs: [] });
+      R.recs.push({ t: 'Tiendas', s: t.s, w: W, d: t.linea, m: t.marca, du: '', v: [t.v, r4(t.vn), t.mgV ? r4(t.mgW / t.mgV) : null, smRot(t.v, t.stk), t.stk, smWos(t.v, t.stk)] });
+    }
+    for (const m in stores) stores[m] = stores[m].map(e => [sucs.indexOf(e[0]), e[1], e[2], e[3]]);
+    return { semana: W, alldata: porLinea, tiendas, sucs, stores, sinLinea, semanas: [...semanasVistas].sort((a, b) => a - b) };
+  }
+
   // ---------- semana declarada dentro del archivo (para cotejar con el nombre) ----------
   function semanaDelLibro(tipo, wb) {
-    if (tipo === 'tiendas' || tipo === 'topsuc') return null;   // traen todas las semanas
+    if (tipo === 'tiendas' || tipo === 'topsuc' || tipo === 'steve') return null;   // traen todas las semanas
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = filasDe(ws).slice(0, 12);
     for (const r of rows) {
@@ -300,6 +425,11 @@
 
   // ---------- resumen para mostrar en pantalla ----------
   function resumen(tipo, json, semana) {
+    if (tipo === 'steve') {
+      const lineas = Object.keys(json.alldata).map(ln => { const t = json.alldata[ln].gt._TOTAL || []; return { hoja: ln.replace(/^[^ ]+ /, '') + ' S' + json.semana, filas: json.alldata[ln].rows.length, clientes: json.alldata[ln].retailers.length, vtaUN: t[0], vtaNeta: t[5], stock: t[3] }; });
+      const recs = Object.values(json.tiendas).reduce((a, R) => a + R.recs.length, 0);
+      return { tipo, hojas: lineas, sucursales: json.sucs.length, recs, modelosTienda: Object.keys(json.stores).length, sinLinea: json.sinLinea, semanas: json.semanas };
+    }
     if (tipo === 'tiendas') {
       const si = json.dim.indexOf('s'), ci = json.dim.indexOf('cli');
       const sucs = new Set(json.rows.map(r => r[si])), clis = new Set(json.rows.map(r => r[ci]));
@@ -324,6 +454,7 @@
       case 'calzado': case 'ropa': case 'acc': return parseLinea(wb, semana);
       case 'tiendas': return parseTiendas(wb, semana);
       case 'topsuc': return parseTopSuc(wb, semana);
+      case 'steve': return parseSteve(wb, semana);
       default: throw new Error('Tipo desconocido: ' + tipo);
     }
   }
@@ -331,6 +462,7 @@
   function opcionesLectura(tipo) {
     const o = { dense: true, cellText: false, cellHTML: false, cellStyles: false };
     if (tipo === 'tiendas') o.sheets = ['tiendas'];
+    if (tipo === 'steve') o.sheets = ['SKU', 'Tienda'];
     return o;
   }
 

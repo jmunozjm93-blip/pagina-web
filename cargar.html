@@ -41,7 +41,7 @@
   .bar { height:4px; background:#2c3340; border-radius:2px; overflow:hidden; margin-top:10px; }
   .bar i { display:block; height:100%; width:30%; background:var(--accent); animation:slide 1.2s infinite; }
   @keyframes slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(400%)} }
-  .estado { display:grid; grid-template-columns:auto repeat(5,1fr); gap:4px 10px; font-size:.86rem; align-items:center; }
+  .estado { display:grid; grid-template-columns:auto repeat(6,1fr); gap:4px 10px; font-size:.86rem; align-items:center; }
   .estado .h { color:var(--muted); }
   .estado .ok { color:var(--ok); } .estado .no { color:#4b5563; }
   .small { font-size:.82rem; color:var(--muted); }
@@ -52,7 +52,7 @@
 <body>
 <main>
   <h1>Cargar semana de sell out</h1>
-  <p class="lead">Adjunta los 5 Excel de la semana, uno por uno. La app valida el nombre y la estructura, los convierte y los sube a GitHub. El dashboard toma la semana nueva automáticamente.</p>
+  <p class="lead">Adjunta los 6 Excel de la semana (5 de sell out + Steve Madden), uno por uno. La app valida el nombre y la estructura, los convierte y los sube a GitHub. El dashboard toma la semana nueva automáticamente.</p>
 
   <div class="box">
     <h2>1 · Conexión con GitHub</h2>
@@ -96,8 +96,8 @@ const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
 const el = id => document.getElementById(id);
 const fmt = n => n == null ? '–' : Number(n).toLocaleString('es-CL');
 const money = n => n == null ? '–' : '$' + Math.round(n).toLocaleString('es-CL');
-const ETIQ = { calzado: 'Calzado', ropa: 'Ropa', acc: 'Accesorios', tiendas: 'Tiendas', topsuc: 'Top-5 sucursales' };
-const ORDEN = ['calzado', 'ropa', 'acc', 'tiendas', 'topsuc'];
+const ETIQ = { calzado: 'Calzado', ropa: 'Ropa', acc: 'Accesorios', tiendas: 'Tiendas', topsuc: 'Top-5 sucursales', steve: 'Steve Madden' };
+const ORDEN = ['calzado', 'ropa', 'acc', 'tiendas', 'topsuc', 'steve'];
 el('repoName').textContent = `${OWNER}/${REPO}`;
 el('names').innerHTML = Convertir.TIPOS.map(t => `<div>${ETIQ[t.tipo]}: <code>${t.etiqueta}</code></div>`).join('');
 
@@ -172,7 +172,7 @@ async function cargarEstado() {
     if (token()) m = await leerManifiesto();
     else { const r = await fetch('data/semanas.json?t=' + Date.now()); m = r.ok ? await r.json() : { semanas: {} }; }
     const wks = Object.keys(m.semanas || {}).sort((a, b) => a - b);
-    if (!wks.length) { el('estado').textContent = 'Todavía no hay semanas cargadas en GitHub (el dashboard trae embebidas las semanas 27 a 36).'; return; }
+    if (!wks.length) { el('estado').textContent = 'Todavía no hay semanas cargadas en GitHub (los dashboards traen embebidas las semanas 27 a 36 y 27 a 37 en Steve Madden).'; return; }
     el('estado').innerHTML = `<div class="estado"><div class="h">Semana</div>${ORDEN.map(t => `<div class="h">${ETIQ[t]}</div>`).join('')}` +
       wks.map(w => `<div><b>S${w}</b></div>` + ORDEN.map(t => m.semanas[w][t] ? `<div class="ok" title="${m.semanas[w][t]}">✓</div>` : `<div class="no">—</div>`).join('')).join('') + '</div>';
   } catch (e) { el('estado').textContent = 'No pude leer el estado: ' + e.message; }
