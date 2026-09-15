@@ -10,6 +10,7 @@ Reportes semanales de sell out de Grupo Depor empaquetados como archivos HTML ú
 | `index.html` | Portada con enlaces a los dashboards | — |
 | `Dashboard sell out.html` | Sell out semanal: Calzado, Ropa, Accesorios, Tiendas y Guía. Semanas 27–36 embebidas; 37+ desde `data/` | 74 MB |
 | `Dashboard Steve Madden.html` | Sell out de la marca Steve Madden | 1,4 MB |
+| `curvas.html` | Guía de curvas de tallas (Converse, Fila, Umbro); se muestra en la pestaña CURVA del dashboard sell out | 60 KB |
 | `RESUMEN PROYECTO.md` | Documento de traspaso: fuentes, estructura de datos, reglas de negocio y rutina semanal | — |
 
 ## Qué tiene el dashboard principal

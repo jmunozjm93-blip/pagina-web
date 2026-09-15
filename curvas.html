@@ -1,0 +1,819 @@
+<meta charset="utf-8">
+<title>Curvas de tallas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+<style>
+:root{
+  --ink:#241F3D; --ink-2:#4A4470; --muted:#7B759F; --faint:#A9A3C9;
+  --card:#FFFFFF; --card-line:#E9E4F7; --row-line:#F3F1FB; --hover:#F8F6FE;
+  --chip:#FFFFFF; --chip-line:#E6E1F7; --pill-bg:#F2EFFE; --pill-ink:#6C5CE0;
+  --brand:#6C5CE0; --brand-2:#A78BFA; --brand-soft:#F1EEFE;
+  --hit:#E5484D; --hit-bg:#FDEEEE;
+  --bg-base:#FFFFFF;
+  --sticky:rgba(255,255,255,.9);
+  --shadow-c:0 2px 10px -6px rgba(70,50,150,.18);
+  --shadow-s:0 4px 14px -8px rgba(90,70,180,.34);
+  --g1:#6C5CE0; --g2:#A78BFA;
+}
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100%; color:var(--ink);
+  font-family:"Outfit", system-ui, -apple-system, sans-serif;
+  font-size:16px; line-height:1.5; font-weight:400;
+  -webkit-font-smoothing:antialiased; font-variant-numeric:tabular-nums;
+  background:var(--bg-base);
+  -webkit-text-size-adjust:100%; text-size-adjust:100%;
+  overflow-x:hidden;
+}
+.wrap{max-width:1240px; margin:0 auto; padding-left:26px; padding-right:26px}
+
+/* ── masthead ────────────────────────── */
+.mast{padding-top:52px; padding-bottom:26px}
+.eyebrow{
+  font-size:11px; font-weight:600; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--faint); margin:0 0 12px; display:flex; align-items:center; gap:9px;
+}
+.eyebrow svg{width:17px; height:17px; color:var(--brand)}
+h1{
+  font-size:clamp(38px, 6.6vw, 62px); font-weight:600; letter-spacing:-.035em;
+  line-height:1.02; margin:0 0 14px; text-wrap:balance;
+}
+h1 span{font-weight:300; color:var(--muted)}
+.mast-foot{display:flex; flex-wrap:wrap; gap:24px 44px; align-items:flex-end; justify-content:space-between}
+.lede{margin:0; max-width:50ch; color:var(--ink-2); font-size:16.5px; font-weight:300}
+.facts{display:flex; gap:30px}
+.fact{display:flex; flex-direction:column; gap:1px}
+.fact b{font-size:27px; font-weight:600; line-height:1; letter-spacing:-.02em; color:var(--brand)}
+.fact span{font-size:10.5px; font-weight:500; letter-spacing:.15em; text-transform:uppercase; color:var(--faint)}
+
+/* ── toolbar ─────────────────────────── */
+.bar{position:sticky; top:0; z-index:30; background:var(--sticky); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px)}
+.bar-in{
+  max-width:1240px; margin:0 auto; padding:14px 26px;
+  display:flex; flex-wrap:wrap; gap:9px; align-items:center;
+}
+.search{position:relative; flex:1 1 290px; min-width:210px; max-width:380px}
+.search input{
+  width:100%; padding:12px 40px 12px 42px; border-radius:999px;
+  border:1.5px solid var(--chip-line); background:var(--chip); color:var(--ink);
+  font-family:inherit; font-size:16px; box-shadow:var(--shadow-s);
+}
+.search input::-webkit-search-cancel-button,.search input::-webkit-search-decoration{-webkit-appearance:none; appearance:none}
+.search input::placeholder{color:var(--faint); font-weight:300}
+.search input:focus{outline:none; border-color:var(--brand); box-shadow:0 0 0 4px var(--brand-soft)}
+.mag{position:absolute; left:16px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--faint); pointer-events:none}
+.clear{
+  position:absolute; right:7px; top:50%; transform:translateY(-50%); display:none;
+  border:0; background:transparent; color:var(--faint); font-size:19px; line-height:1;
+  padding:5px 9px; border-radius:999px; cursor:pointer;
+}
+.clear:hover{color:var(--ink); background:var(--brand-soft)}
+.clear:focus-visible{outline:2px solid var(--brand)}
+.segs{display:flex; gap:7px; flex-wrap:wrap; align-items:center}
+.divider{width:1px; height:24px; background:var(--chip-line); margin:0 3px; flex:none}
+.seg .swatch{
+  display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:7px;
+  background:linear-gradient(135deg, var(--g1), var(--g2)); vertical-align:1px;
+}
+.seg[aria-pressed="true"] .swatch{background:rgba(255,255,255,.9)}
+.seg{
+  font-family:inherit; font-size:13px; font-weight:500; padding:11px 17px;
+  border-radius:999px; border:1.5px solid var(--chip-line); background:var(--chip);
+  color:var(--ink-2); cursor:pointer;
+}
+.seg:hover{border-color:var(--brand); color:var(--brand)}
+.seg:focus-visible{outline:2px solid var(--brand); outline-offset:2px}
+.seg[aria-pressed="true"]{
+  background:linear-gradient(135deg, var(--brand), var(--brand-2));
+  border-color:transparent; color:#fff; font-weight:600; box-shadow:0 6px 16px -8px var(--brand);
+}
+.tally{margin:0 0 0 auto; font-size:13.5px; color:var(--muted); font-weight:300; display:none}
+.tally b{color:var(--hit); font-weight:600}
+.hint{margin:0 0 0 auto; font-size:13px; color:var(--faint); font-weight:300}
+.hint kbd{
+  font:inherit; font-size:11.5px; background:var(--chip); border:1px solid var(--chip-line);
+  border-radius:6px; padding:2px 6px; color:var(--muted);
+}
+@media (max-width:800px){ .hint{display:none} .tally{margin-left:0} }
+
+/* ── sections ────────────────────────── */
+main{padding-bottom:80px}
+.sec{margin-bottom:44px}
+.sec.hidden{display:none}
+.card[data-brand="converse"],.chip-brand[data-brand="converse"]{--g1:#6C5CE0; --g2:#A78BFA}
+.card[data-brand="fila"],.chip-brand[data-brand="fila"]{--g1:#1D3D8F; --g2:#4E7BE0}
+.card[data-brand="umbro"],.chip-brand[data-brand="umbro"]{--g1:#0E8C86; --g2:#3ECFC0}
+.bm{font-weight:600; color:var(--g1); letter-spacing:.03em}
+.sec-hd{display:flex; align-items:center; gap:11px; flex-wrap:wrap; margin-bottom:16px; padding-left:2px}
+.dot{width:11px; height:11px; border-radius:50%; flex:none; background:linear-gradient(135deg, var(--brand), var(--brand-2))}
+.sec-hd h2{font-size:19px; font-weight:600; letter-spacing:-.02em; margin:0}
+.sec-blurb{font-size:14px; color:var(--muted); font-weight:300}
+.sec-n{margin-left:auto; font-size:12px; font-weight:500; color:var(--faint); letter-spacing:.06em}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(282px,1fr)); gap:18px; align-items:start}
+.card{
+  background:var(--card); border:1px solid var(--card-line); border-radius:22px;
+  box-shadow:var(--shadow-c); padding:19px 19px 8px; display:flex; flex-direction:column; min-width:0;
+}
+.card.hidden{display:none}
+.card-hd{display:flex; align-items:center; gap:12px; min-width:0}
+.badge{
+  width:42px; height:42px; border-radius:14px; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:600; color:#fff; letter-spacing:.01em;
+  background:linear-gradient(140deg, var(--g1), var(--g2));
+  box-shadow:0 8px 18px -10px var(--g1);
+}
+.ttl{min-width:0}
+.ttl h3{font-size:17px; font-weight:600; margin:0; letter-spacing:-.015em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ttl p{margin:0; font-size:13px; color:var(--faint); font-weight:300}
+.pill{
+  display:inline-block; align-self:flex-start; margin:14px 0 4px;
+  font-size:12px; font-weight:500; color:var(--pill-ink); background:var(--pill-bg);
+  padding:5px 12px; border-radius:999px;
+}
+.twrap{position:relative}
+.twrap::after{
+  content:""; position:absolute; left:0; right:0; bottom:0; height:34px; opacity:0;
+  background:linear-gradient(to bottom, rgba(0,0,0,0), var(--card) 84%);
+  pointer-events:none; transition:opacity .18s ease; border-radius:0 0 14px 14px;
+}
+.twrap.more::after{opacity:1}
+.tw{overflow:auto; max-height:330px; scrollbar-width:thin; margin:0 -4px; -webkit-overflow-scrolling:touch}
+table{width:100%; border-collapse:collapse}
+thead th{
+  position:sticky; top:0; z-index:1; background:var(--card);
+  font-size:10px; font-weight:600; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--faint); text-align:right; padding:9px 10px 8px;
+}
+thead th:first-child{text-align:left}
+td{
+  font-size:14px; font-weight:300; padding:7px 10px; text-align:right;
+  color:var(--ink-2); border-top:1px solid var(--row-line);
+}
+td:first-child{text-align:left; font-weight:500; color:var(--ink)}
+tbody tr:hover td{background:var(--hover)}
+tbody tr:hover td:first-child{border-radius:9px 0 0 9px}
+tbody tr:hover td:last-child{border-radius:0 9px 9px 0}
+tbody tr.hit td{background:var(--hit-bg); color:var(--hit); font-weight:500}
+tbody tr.hit td:first-child{font-weight:600; border-radius:9px 0 0 9px}
+tbody tr.hit td:last-child{border-radius:0 9px 9px 0}
+tbody tr.off{display:none}
+.empty-state{
+  display:none; background:var(--card); border:1px solid var(--card-line); border-radius:22px;
+  box-shadow:var(--shadow-c); padding:38px 30px; text-align:center; margin-bottom:44px;
+}
+.empty-state.on{display:block}
+.empty-state h3{font-size:19px; font-weight:600; margin:0 0 6px; letter-spacing:-.02em}
+.empty-state p{margin:0; color:var(--muted); font-weight:300; font-size:15px}
+
+/* ── colophon ────────────────────────── */
+.colophon{
+  background:var(--card); border:1px solid var(--card-line); border-radius:22px;
+  padding:24px 26px; display:grid; gap:22px; grid-template-columns:repeat(auto-fit, minmax(230px,1fr));
+  box-shadow:var(--shadow-c);
+}
+.col h4{font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); margin:0 0 8px}
+.col p{margin:0; font-size:14px; color:var(--ink-2); font-weight:300; line-height:1.6}
+.col p + p{margin-top:6px}
+.col b{font-weight:600; color:var(--ink)}
+.col .fine{color:var(--faint); font-size:13px}
+.col code{
+  font-family:inherit; font-size:12.5px; font-weight:500; color:var(--pill-ink);
+  background:var(--pill-bg); padding:1px 7px; border-radius:999px;
+}
+@media (prefers-reduced-motion:no-preference){
+  .seg,.card,.search input{transition:border-color .16s ease, box-shadow .16s ease, color .16s ease}
+}
+
+/* ── móvil ───────────────────────────── */
+@media (max-width:720px){
+  .wrap{padding-left:16px; padding-right:16px}
+  .mast{padding-top:30px; padding-bottom:18px}
+  h1{font-size:clamp(32px,9vw,44px); margin-bottom:12px}
+  .lede{font-size:15.5px}
+  .lede-more{display:none}
+  .mast-foot{gap:18px}
+  .facts{gap:22px; width:100%}
+  .fact b{font-size:22px}
+  .fact span{font-size:9.5px; letter-spacing:.12em}
+
+  .bar-in{padding:10px 16px; gap:8px}
+  .search{flex:1 1 100%; max-width:none}
+  .divider{display:none}
+  .segs{
+    flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+    width:100%; padding-bottom:2px; -webkit-overflow-scrolling:touch;
+  }
+  .segs::-webkit-scrollbar{display:none}
+  .seg{flex:none; padding:9px 15px; font-size:13px}
+  .tally{margin:0; width:100%; font-size:13px}
+
+  .sec{margin-bottom:32px}
+  .sec-hd{gap:8px}
+  .sec-hd h2{font-size:17px}
+  .sec-blurb{display:none}
+  .sec-n{font-size:11.5px}
+
+  .grid{grid-template-columns:1fr; gap:12px}
+  .card{border-radius:18px; padding:16px 16px 6px}
+  .badge{width:38px; height:38px; border-radius:12px; font-size:14px}
+  .ttl h3{font-size:16px}
+  .pill{margin:12px 0 2px}
+  /* en móvil la tabla se muestra completa: se scrollea la página, no la tarjeta */
+  .tw{max-height:none; overflow:visible; margin:0}
+  .twrap::after{display:none}
+  thead th{position:static}
+  td{font-size:14.5px; padding:8px 8px}
+  thead th{padding:8px 8px 7px}
+  .colophon{padding:20px 18px; border-radius:18px; gap:18px}
+}
+@media (max-width:380px){
+  td{font-size:13.5px; padding:8px 6px}
+  thead th{font-size:9.5px; letter-spacing:.1em; padding:8px 6px 7px}
+}
+</style>
+
+<header class="wrap mast">
+  <p class="eyebrow">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="10.2" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M12 5.6l1.72 3.86 4.2.42-3.14 2.82.9 4.13L12 14.72l-3.68 2.11.9-4.13-3.14-2.82 4.2-.42L12 5.6z" fill="currentColor"/>
+    </svg>
+    Guía de tallas &middot; Converse &middot; FILA &middot; Umbro
+  </p>
+  <h1>Curvas <span>de tallas</span></h1>
+  <div class="mast-foot">
+    <p class="lede">Las curvas oficiales de las tres marcas, reducidas a lo que se usa a diario: US, EUR y centímetros. <span class="lede-more">Escribe una talla y aparece marcada en todas las curvas que la incluyen.</span></p>
+    <div class="facts">
+      <span class="fact"><b>23</b><span>Curvas</span></span>
+      <span class="fact"><b>3</b><span>Marcas</span></span>
+      <span class="fact"><b>17–62</b><span>Rango EUR</span></span>
+    </div>
+  </div>
+</header>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="search">
+      <svg class="mag" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="8.6" cy="8.6" r="5.6" stroke="currentColor" stroke-width="1.9"/>
+        <path d="M12.9 12.9L17 17" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      </svg>
+      <input id="q" type="search" inputmode="decimal" placeholder="Buscar talla — 42, 9.5, 27…" aria-label="Buscar talla">
+      <button class="clear" id="clr" type="button" aria-label="Borrar búsqueda">×</button>
+    </div>
+    <div class="segs" role="group" aria-label="Filtrar por marca">
+      <button class="seg" type="button" data-brand="all" aria-pressed="true">Todas</button>
+      <button class="seg chip-brand" type="button" data-brand="converse" aria-pressed="false"><i class="swatch"></i>Converse</button>
+      <button class="seg chip-brand" type="button" data-brand="fila" aria-pressed="false"><i class="swatch"></i>FILA</button>
+      <button class="seg chip-brand" type="button" data-brand="umbro" aria-pressed="false"><i class="swatch"></i>Umbro</button>
+    </div>
+    <span class="divider"></span>
+    <div class="segs" role="group" aria-label="Filtrar por segmento">
+      <button class="seg segc" type="button" data-cat="all" aria-pressed="true">Todo</button>
+      <button class="seg segc" type="button" data-cat="adulto" aria-pressed="false">Adulto</button>
+      <button class="seg segc" type="button" data-cat="nino" aria-pressed="false">Niño</button>
+      <button class="seg segc" type="button" data-cat="sandalia" aria-pressed="false">Sandalia</button>
+    </div>
+    <p class="hint" id="hint">Pulsa <kbd>/</kbd> para buscar</p>
+    <p class="tally" id="tally" role="status"></p>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <div class="empty-state" id="empty">
+      <h3>Sin resultados</h3>
+      <p id="empty-txt">Ninguna curva incluye ese valor.</p>
+    </div>
+<section class="sec" data-cat="adulto">
+  <div class="sec-hd">
+    <span class="dot"></span>
+    <h2>Adulto</h2>
+    <span class="sec-blurb">Calzado adulto, hombre y mujer</span>
+    <span class="sec-n" data-total="10">10 curvas</span>
+  </div>
+  <div class="grid">
+<article class="card" data-cat="adulto" data-brand="converse" data-code="#1" data-name="hombre converse">
+  <header class="card-hd">
+    <span class="badge">1</span>
+    <div class="ttl">
+      <h3>Hombre</h3>
+      <p><b class="bm">Converse</b> &middot; 1/A gender</p>
+    </div>
+  </header>
+  <p class="pill">26 tallas&nbsp;&middot;&nbsp;EUR 39–62</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="6.5 39 24.5"><td>6.5</td><td>39</td><td>24.5</td></tr><tr data-k="7 40 25"><td>7</td><td>40</td><td>25</td></tr><tr data-k="7.5 40.5 25.5"><td>7.5</td><td>40.5</td><td>25.5</td></tr><tr data-k="8 41 26"><td>8</td><td>41</td><td>26</td></tr><tr data-k="8.5 42 26.5"><td>8.5</td><td>42</td><td>26.5</td></tr><tr data-k="9 42.5 27"><td>9</td><td>42.5</td><td>27</td></tr><tr data-k="9.5 43 27.5"><td>9.5</td><td>43</td><td>27.5</td></tr><tr data-k="10 44 28"><td>10</td><td>44</td><td>28</td></tr><tr data-k="10.5 44.5 28.5"><td>10.5</td><td>44.5</td><td>28.5</td></tr><tr data-k="11 45 29"><td>11</td><td>45</td><td>29</td></tr><tr data-k="11.5 46 29.5"><td>11.5</td><td>46</td><td>29.5</td></tr><tr data-k="12 46.5 30"><td>12</td><td>46.5</td><td>30</td></tr><tr data-k="12.5 47 30.5"><td>12.5</td><td>47</td><td>30.5</td></tr><tr data-k="13 47.5 31"><td>13</td><td>47.5</td><td>31</td></tr><tr data-k="13.5 48 31.5"><td>13.5</td><td>48</td><td>31.5</td></tr><tr data-k="14 49 32"><td>14</td><td>49</td><td>32</td></tr><tr data-k="14.5 49.5 32.5"><td>14.5</td><td>49.5</td><td>32.5</td></tr><tr data-k="15 50 33"><td>15</td><td>50</td><td>33</td></tr><tr data-k="16 51.5 34"><td>16</td><td>51.5</td><td>34</td></tr><tr data-k="17 53 35"><td>17</td><td>53</td><td>35</td></tr><tr data-k="18 54.5 36"><td>18</td><td>54.5</td><td>36</td></tr><tr data-k="19 56 37"><td>19</td><td>56</td><td>37</td></tr><tr data-k="20 57.5 38"><td>20</td><td>57.5</td><td>38</td></tr><tr data-k="21 59 39"><td>21</td><td>59</td><td>39</td></tr><tr data-k="22 60.5 40"><td>22</td><td>60.5</td><td>40</td></tr><tr data-k="23 62 41"><td>23</td><td>62</td><td>41</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="adulto" data-brand="converse" data-code="#2" data-name="unisex converse">
+  <header class="card-hd">
+    <span class="badge">2</span>
+    <div class="ttl">
+      <h3>Unisex</h3>
+      <p><b class="bm">Converse</b> &middot; 1/A gender</p>
+    </div>
+  </header>
+  <p class="pill">27 tallas&nbsp;&middot;&nbsp;EUR 35–54.5</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US H</th><th scope="col">US M</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="3 4.5 35 21"><td>3</td><td>4.5</td><td>35</td><td>21</td></tr><tr data-k="3.5 5 35.5 21.5"><td>3.5</td><td>5</td><td>35.5</td><td>21.5</td></tr><tr data-k="4 5.5 36 22"><td>4</td><td>5.5</td><td>36</td><td>22</td></tr><tr data-k="4.5 6 37 22.5"><td>4.5</td><td>6</td><td>37</td><td>22.5</td></tr><tr data-k="5 6.5 37.5 23"><td>5</td><td>6.5</td><td>37.5</td><td>23</td></tr><tr data-k="5.5 7 38 23.5"><td>5.5</td><td>7</td><td>38</td><td>23.5</td></tr><tr data-k="6 7.5 38.5 24"><td>6</td><td>7.5</td><td>38.5</td><td>24</td></tr><tr data-k="6.5 8 39 24.5"><td>6.5</td><td>8</td><td>39</td><td>24.5</td></tr><tr data-k="7 8.5 40 25"><td>7</td><td>8.5</td><td>40</td><td>25</td></tr><tr data-k="7.5 9 40.5 25.5"><td>7.5</td><td>9</td><td>40.5</td><td>25.5</td></tr><tr data-k="8 9.5 41 26"><td>8</td><td>9.5</td><td>41</td><td>26</td></tr><tr data-k="8.5 10 42 26.5"><td>8.5</td><td>10</td><td>42</td><td>26.5</td></tr><tr data-k="9 10.5 42.5 27"><td>9</td><td>10.5</td><td>42.5</td><td>27</td></tr><tr data-k="9.5 11 43 27.5"><td>9.5</td><td>11</td><td>43</td><td>27.5</td></tr><tr data-k="10 11.5 44 28"><td>10</td><td>11.5</td><td>44</td><td>28</td></tr><tr data-k="10.5 12 44.5 28.5"><td>10.5</td><td>12</td><td>44.5</td><td>28.5</td></tr><tr data-k="11 12.5 45 29"><td>11</td><td>12.5</td><td>45</td><td>29</td></tr><tr data-k="11.5 13 46 29.5"><td>11.5</td><td>13</td><td>46</td><td>29.5</td></tr><tr data-k="12 13.5 46.5 30"><td>12</td><td>13.5</td><td>46.5</td><td>30</td></tr><tr data-k="12.5 14 47 30.5"><td>12.5</td><td>14</td><td>47</td><td>30.5</td></tr><tr data-k="13 14.5 47.5 31"><td>13</td><td>14.5</td><td>47.5</td><td>31</td></tr><tr data-k="13.5 15 48 31.5"><td>13.5</td><td>15</td><td>48</td><td>31.5</td></tr><tr data-k="14 15.5 49 32"><td>14</td><td>15.5</td><td>49</td><td>32</td></tr><tr data-k="15 16.5 50 33"><td>15</td><td>16.5</td><td>50</td><td>33</td></tr><tr data-k="16 17.5 51.5 34"><td>16</td><td>17.5</td><td>51.5</td><td>34</td></tr><tr data-k="17 18.5 53 35"><td>17</td><td>18.5</td><td>53</td><td>35</td></tr><tr data-k="18 19.5 54.5 36"><td>18</td><td>19.5</td><td>54.5</td><td>36</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="adulto" data-brand="converse" data-code="#7" data-name="mujer converse">
+  <header class="card-hd">
+    <span class="badge">7</span>
+    <div class="ttl">
+      <h3>Mujer</h3>
+      <p><b class="bm">Converse</b> &middot; 5/B gender</p>
+    </div>
+  </header>
+  <p class="pill">19 tallas&nbsp;&middot;&nbsp;EUR 34.5–47</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US M</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="4 34.5 21"><td>4</td><td>34.5</td><td>21</td></tr><tr data-k="4.5 35 21.5"><td>4.5</td><td>35</td><td>21.5</td></tr><tr data-k="5 35.5 22"><td>5</td><td>35.5</td><td>22</td></tr><tr data-k="5.5 36 22.5"><td>5.5</td><td>36</td><td>22.5</td></tr><tr data-k="6 37 23"><td>6</td><td>37</td><td>23</td></tr><tr data-k="6.5 37.5 23.5"><td>6.5</td><td>37.5</td><td>23.5</td></tr><tr data-k="7 38 24"><td>7</td><td>38</td><td>24</td></tr><tr data-k="7.5 38.5 24.5"><td>7.5</td><td>38.5</td><td>24.5</td></tr><tr data-k="8 39 25"><td>8</td><td>39</td><td>25</td></tr><tr data-k="8.5 40 25.5"><td>8.5</td><td>40</td><td>25.5</td></tr><tr data-k="9 40.5 26"><td>9</td><td>40.5</td><td>26</td></tr><tr data-k="9.5 41 26.5"><td>9.5</td><td>41</td><td>26.5</td></tr><tr data-k="10 42 27"><td>10</td><td>42</td><td>27</td></tr><tr data-k="10.5 42.5 27.5"><td>10.5</td><td>42.5</td><td>27.5</td></tr><tr data-k="11 43 28"><td>11</td><td>43</td><td>28</td></tr><tr data-k="11.5 43.5 28.5"><td>11.5</td><td>43.5</td><td>28.5</td></tr><tr data-k="12 44.5 29"><td>12</td><td>44.5</td><td>29</td></tr><tr data-k="13 46 30"><td>13</td><td>46</td><td>30</td></tr><tr data-k="14 47 31"><td>14</td><td>47</td><td>31</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="adulto" data-brand="converse" data-code="#8" data-name="chuck taylor unisex converse">
+  <header class="card-hd">
+    <span class="badge">8</span>
+    <div class="ttl">
+      <h3>Chuck Taylor unisex</h3>
+      <p><b class="bm">Converse</b> &middot; CT AS y derivados</p>
+    </div>
+  </header>
+  <p class="pill">27 tallas&nbsp;&middot;&nbsp;EUR 34–54</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US H</th><th scope="col">US M</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="2.5 4.5 34 21"><td>2.5</td><td>4.5</td><td>34</td><td>21</td></tr><tr data-k="3 5 35 22"><td>3</td><td>5</td><td>35</td><td>22</td></tr><tr data-k="3.5 5.5 36 22.5"><td>3.5</td><td>5.5</td><td>36</td><td>22.5</td></tr><tr data-k="4 6 36.5 23"><td>4</td><td>6</td><td>36.5</td><td>23</td></tr><tr data-k="4.5 6.5 37 23.5"><td>4.5</td><td>6.5</td><td>37</td><td>23.5</td></tr><tr data-k="5 7 37.5 24"><td>5</td><td>7</td><td>37.5</td><td>24</td></tr><tr data-k="5.5 7.5 38 24.5"><td>5.5</td><td>7.5</td><td>38</td><td>24.5</td></tr><tr data-k="6 8 39 24.5"><td>6</td><td>8</td><td>39</td><td>24.5</td></tr><tr data-k="6.5 8.5 39.5 25"><td>6.5</td><td>8.5</td><td>39.5</td><td>25</td></tr><tr data-k="7 9 40 25.5"><td>7</td><td>9</td><td>40</td><td>25.5</td></tr><tr data-k="7.5 9.5 41 26"><td>7.5</td><td>9.5</td><td>41</td><td>26</td></tr><tr data-k="8 10 41.5 26.5"><td>8</td><td>10</td><td>41.5</td><td>26.5</td></tr><tr data-k="8.5 10.5 42 27"><td>8.5</td><td>10.5</td><td>42</td><td>27</td></tr><tr data-k="9 11 42.5 27.5"><td>9</td><td>11</td><td>42.5</td><td>27.5</td></tr><tr data-k="9.5 11.5 43 28"><td>9.5</td><td>11.5</td><td>43</td><td>28</td></tr><tr data-k="10 12 44 28.5"><td>10</td><td>12</td><td>44</td><td>28.5</td></tr><tr data-k="10.5 12.5 44.5 29"><td>10.5</td><td>12.5</td><td>44.5</td><td>29</td></tr><tr data-k="11 13 45 29.5"><td>11</td><td>13</td><td>45</td><td>29.5</td></tr><tr data-k="11.5 13.5 46 30"><td>11.5</td><td>13.5</td><td>46</td><td>30</td></tr><tr data-k="12 14 46.5 30.5"><td>12</td><td>14</td><td>46.5</td><td>30.5</td></tr><tr data-k="12.5 14.5 47 31"><td>12.5</td><td>14.5</td><td>47</td><td>31</td></tr><tr data-k="13 15 48 31.5"><td>13</td><td>15</td><td>48</td><td>31.5</td></tr><tr data-k="14 16 49 32"><td>14</td><td>16</td><td>49</td><td>32</td></tr><tr data-k="15 17 50 33"><td>15</td><td>17</td><td>50</td><td>33</td></tr><tr data-k="16 18 51.5 34"><td>16</td><td>18</td><td>51.5</td><td>34</td></tr><tr data-k="17 19 53 35"><td>17</td><td>19</td><td>53</td><td>35</td></tr><tr data-k="18 20 54 36"><td>18</td><td>20</td><td>54</td><td>36</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="adulto" data-brand="converse" data-code="#8A" data-name="chuck taylor mujer converse">
+  <header class="card-hd">
+    <span class="badge">8A</span>
+    <div class="ttl">
+      <h3>Chuck Taylor mujer</h3>
+      <p><b class="bm">Converse</b> &middot; CT AS y derivados</p>
+    </div>
+  </header>
+  <p class="pill">26 tallas&nbsp;&middot;&nbsp;EUR 35–54</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US M</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="5 35 22"><td>5</td><td>35</td><td>22</td></tr><tr data-k="5.5 36 22.5"><td>5.5</td><td>36</td><td>22.5</td></tr><tr data-k="6 36.5 23"><td>6</td><td>36.5</td><td>23</td></tr><tr data-k="6.5 37 23.5"><td>6.5</td><td>37</td><td>23.5</td></tr><tr data-k="7 37.5 24"><td>7</td><td>37.5</td><td>24</td></tr><tr data-k="7.5 38 24.5"><td>7.5</td><td>38</td><td>24.5</td></tr><tr data-k="8 39 24.5"><td>8</td><td>39</td><td>24.5</td></tr><tr data-k="8.5 39.5 25"><td>8.5</td><td>39.5</td><td>25</td></tr><tr data-k="9 40 25.5"><td>9</td><td>40</td><td>25.5</td></tr><tr data-k="9.5 41 26"><td>9.5</td><td>41</td><td>26</td></tr><tr data-k="10 41.5 26.5"><td>10</td><td>41.5</td><td>26.5</td></tr><tr data-k="10.5 42 27"><td>10.5</td><td>42</td><td>27</td></tr><tr data-k="11 42.5 27.5"><td>11</td><td>42.5</td><td>27.5</td></tr><tr data-k="11.5 43 28"><td>11.5</td><td>43</td><td>28</td></tr><tr data-k="12 44 28.5"><td>12</td><td>44</td><td>28.5</td></tr><tr data-k="12.5 44.5 29"><td>12.5</td><td>44.5</td><td>29</td></tr><tr data-k="13 45 29.5"><td>13</td><td>45</td><td>29.5</td></tr><tr data-k="13.5 46 30"><td>13.5</td><td>46</td><td>30</td></tr><tr data-k="14 46.5 30.5"><td>14</td><td>46.5</td><td>30.5</td></tr><tr data-k="14.5 47 31"><td>14.5</td><td>47</td><td>31</td></tr><tr data-k="15 48 31.5"><td>15</td><td>48</td><td>31.5</td></tr><tr data-k="16 49 32"><td>16</td><td>49</td><td>32</td></tr><tr data-k="17 50 33"><td>17</td><td>50</td><td>33</td></tr><tr data-k="18 51.5 34"><td>18</td><td>51.5</td><td>34</td></tr><tr data-k="19 53 35"><td>19</td><td>53</td><td>35</td></tr><tr data-k="20 54 36"><td>20</td><td>54</td><td>36</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="adulto" data-brand="converse" data-code="#8B" data-name="chuck taylor hombre converse">
+  <header class="card-hd">
+    <span class="badge">8B</span>
+    <div class="ttl">
+      <h3>Chuck Taylor hombre</h3>
+      <p><b class="bm">Converse</b> &middot; CT AS y derivados</p>
+    </div>
+  </header>
+  <p class="pill">26 tallas&nbsp;&middot;&nbsp;EUR 35–54</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US H</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="3 35 22"><td>3</td><td>35</td><td>22</td></tr><tr data-k="3.5 36 22.5"><td>3.5</td><td>36</td><td>22.5</td></tr><tr data-k="4 36.5 23"><td>4</td><td>36.5</td><td>23</td></tr><tr data-k="4.5 37 23.5"><td>4.5</td><td>37</td><td>23.5</td></tr><tr data-k="5 37.5 24"><td>5</td><td>37.5</td><td>24</td></tr><tr data-k="5.5 38 24.5"><td>5.5</td><td>38</td><td>24.5</td></tr><tr data-k="6 39 24.5"><td>6</td><td>39</td><td>24.5</td></tr><tr data-k="6.5 39.5 25"><td>6.5</td><td>39.5</td><td>25</td></tr><tr data-k="7 40 25.5"><td>7</td><td>40</td><td>25.5</td></tr><tr data-k="7.5 41 26"><td>7.5</td><td>41</td><td>26</td></tr><tr data-k="8 41.5 26.5"><td>8</td><td>41.5</td><td>26.5</td></tr><tr data-k="8.5 42 27"><td>8.5</td><td>42</td><td>27</td></tr><tr data-k="9 42.5 27.5"><td>9</td><td>42.5</td><td>27.5</td></tr><tr data-k="9.5 43 28"><td>9.5</td><td>43</td><td>28</td></tr><tr data-k="10 44 28.5"><td>10</td><td>44</td><td>28.5</td></tr><tr data-k="10.5 44.5 29"><td>10.5</td><td>44.5</td><td>29</td></tr><tr data-k="11 45 29.5"><td>11</td><td>45</td><td>29.5</td></tr><tr data-k="11.5 46 30"><td>11.5</td><td>46</td><td>30</td></tr><tr data-k="12 46.5 30.5"><td>12</td><td>46.5</td><td>30.5</td></tr><tr data-k="12.5 47 31"><td>12.5</td><td>47</td><td>31</td></tr><tr data-k="13 48 31.5"><td>13</td><td>48</td><td>31.5</td></tr><tr data-k="14 49 32"><td>14</td><td>49</td><td>32</td></tr><tr data-k="15 50 33"><td>15</td><td>50</td><td>33</td></tr><tr data-k="16 51.5 34"><td>16</td><td>51.5</td><td>34</td></tr><tr data-k="17 53 35"><td>17</td><td>53</td><td>35</td></tr><tr data-k="18 54 36"><td>18</td><td>54</td><td>36</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="adulto" data-brand="fila" data-code="F" data-name="hombre fila">
+  <header class="card-hd">
+    <span class="badge">F</span>
+    <div class="ttl">
+      <h3>Hombre</h3>
+      <p><b class="bm">FILA</b> &middot; Zapatillas</p>
+    </div>
+  </header>
+  <p class="pill">15 tallas&nbsp;&middot;&nbsp;EUR 38.5–47.5</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="6 38.5 24"><td>6</td><td>38.5</td><td>24</td></tr><tr data-k="6.5 39 24.5"><td>6.5</td><td>39</td><td>24.5</td></tr><tr data-k="7 40 25"><td>7</td><td>40</td><td>25</td></tr><tr data-k="7.5 40.5 25.5"><td>7.5</td><td>40.5</td><td>25.5</td></tr><tr data-k="8 41 26"><td>8</td><td>41</td><td>26</td></tr><tr data-k="8.5 42 26.5"><td>8.5</td><td>42</td><td>26.5</td></tr><tr data-k="9 42.5 27"><td>9</td><td>42.5</td><td>27</td></tr><tr data-k="9.5 43 27.5"><td>9.5</td><td>43</td><td>27.5</td></tr><tr data-k="10 44 28"><td>10</td><td>44</td><td>28</td></tr><tr data-k="10.5 44.5 28.5"><td>10.5</td><td>44.5</td><td>28.5</td></tr><tr data-k="11 45 29"><td>11</td><td>45</td><td>29</td></tr><tr data-k="11.5 45.5 29.5"><td>11.5</td><td>45.5</td><td>29.5</td></tr><tr data-k="12 46 30"><td>12</td><td>46</td><td>30</td></tr><tr data-k="12.5 47 30.5"><td>12.5</td><td>47</td><td>30.5</td></tr><tr data-k="13 47.5 31"><td>13</td><td>47.5</td><td>31</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="adulto" data-brand="fila" data-code="F" data-name="mujer fila">
+  <header class="card-hd">
+    <span class="badge">F</span>
+    <div class="ttl">
+      <h3>Mujer</h3>
+      <p><b class="bm">FILA</b> &middot; Zapatillas</p>
+    </div>
+  </header>
+  <p class="pill">14 tallas&nbsp;&middot;&nbsp;EUR 35–43</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="4.5 35 21.5"><td>4.5</td><td>35</td><td>21.5</td></tr><tr data-k="5 35.5 22"><td>5</td><td>35.5</td><td>22</td></tr><tr data-k="5.5 36 22.5"><td>5.5</td><td>36</td><td>22.5</td></tr><tr data-k="6 36.5 23"><td>6</td><td>36.5</td><td>23</td></tr><tr data-k="6.5 37.5 23.5"><td>6.5</td><td>37.5</td><td>23.5</td></tr><tr data-k="7 38 24"><td>7</td><td>38</td><td>24</td></tr><tr data-k="7.5 38.5 24.5"><td>7.5</td><td>38.5</td><td>24.5</td></tr><tr data-k="8 39 25"><td>8</td><td>39</td><td>25</td></tr><tr data-k="8.5 40 25.5"><td>8.5</td><td>40</td><td>25.5</td></tr><tr data-k="9 40.5 26"><td>9</td><td>40.5</td><td>26</td></tr><tr data-k="9.5 41 26.5"><td>9.5</td><td>41</td><td>26.5</td></tr><tr data-k="10 42 27"><td>10</td><td>42</td><td>27</td></tr><tr data-k="10.5 42.5 27.5"><td>10.5</td><td>42.5</td><td>27.5</td></tr><tr data-k="11 43 28"><td>11</td><td>43</td><td>28</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="adulto" data-brand="umbro" data-code="U" data-name="hombre / unisex umbro">
+  <header class="card-hd">
+    <span class="badge">U</span>
+    <div class="ttl">
+      <h3>Hombre / Unisex</h3>
+      <p><b class="bm">Umbro</b> &middot; Zapatillas y sandalias</p>
+    </div>
+  </header>
+  <p class="pill">22 tallas&nbsp;&middot;&nbsp;EUR 35.5–48.5</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="3X 35.5 22.5"><td>3X</td><td>35.5</td><td>22.5</td></tr><tr data-k="4 36 23"><td>4</td><td>36</td><td>23</td></tr><tr data-k="4X 36.5 23.5*"><td>4X</td><td>36.5</td><td>23.5*</td></tr><tr data-k="5 37.5 23.5*"><td>5</td><td>37.5</td><td>23.5*</td></tr><tr data-k="5X 38 24*"><td>5X</td><td>38</td><td>24*</td></tr><tr data-k="6 38.5 24*"><td>6</td><td>38.5</td><td>24*</td></tr><tr data-k="6X 39 24.5"><td>6X</td><td>39</td><td>24.5</td></tr><tr data-k="7 40 25"><td>7</td><td>40</td><td>25</td></tr><tr data-k="7X 40.5 25.5"><td>7X</td><td>40.5</td><td>25.5</td></tr><tr data-k="8 41 26"><td>8</td><td>41</td><td>26</td></tr><tr data-k="8X 42 26.5"><td>8X</td><td>42</td><td>26.5</td></tr><tr data-k="9 42.5 27"><td>9</td><td>42.5</td><td>27</td></tr><tr data-k="9X 43 27.5"><td>9X</td><td>43</td><td>27.5</td></tr><tr data-k="10 44 28"><td>10</td><td>44</td><td>28</td></tr><tr data-k="10X 44.5 28.5"><td>10X</td><td>44.5</td><td>28.5</td></tr><tr data-k="11 45 29"><td>11</td><td>45</td><td>29</td></tr><tr data-k="11X 45.5 29.5"><td>11X</td><td>45.5</td><td>29.5</td></tr><tr data-k="12 46 30"><td>12</td><td>46</td><td>30</td></tr><tr data-k="12X 47 30.5"><td>12X</td><td>47</td><td>30.5</td></tr><tr data-k="13 47.5 31"><td>13</td><td>47.5</td><td>31</td></tr><tr data-k="13X 48 31.5"><td>13X</td><td>48</td><td>31.5</td></tr><tr data-k="14 48.5 32"><td>14</td><td>48.5</td><td>32</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="adulto" data-brand="umbro" data-code="U" data-name="mujer umbro">
+  <header class="card-hd">
+    <span class="badge">U</span>
+    <div class="ttl">
+      <h3>Mujer</h3>
+      <p><b class="bm">Umbro</b> &middot; Zapatillas y sandalias</p>
+    </div>
+  </header>
+  <p class="pill">12 tallas&nbsp;&middot;&nbsp;EUR 35.5–42.5</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="4X 35.5 22.5"><td>4X</td><td>35.5</td><td>22.5</td></tr><tr data-k="5 36 23"><td>5</td><td>36</td><td>23</td></tr><tr data-k="5X 36.5 23.5*"><td>5X</td><td>36.5</td><td>23.5*</td></tr><tr data-k="6 37.5 23.5*"><td>6</td><td>37.5</td><td>23.5*</td></tr><tr data-k="6X 38 24*"><td>6X</td><td>38</td><td>24*</td></tr><tr data-k="7 38.5 24*"><td>7</td><td>38.5</td><td>24*</td></tr><tr data-k="7X 39 24.5"><td>7X</td><td>39</td><td>24.5</td></tr><tr data-k="8 40 25"><td>8</td><td>40</td><td>25</td></tr><tr data-k="8X 40.5 25.5"><td>8X</td><td>40.5</td><td>25.5</td></tr><tr data-k="9 41 26"><td>9</td><td>41</td><td>26</td></tr><tr data-k="9X 42 26.5"><td>9X</td><td>42</td><td>26.5</td></tr><tr data-k="10 42.5 27"><td>10</td><td>42.5</td><td>27</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+  </div>
+</section>
+<section class="sec" data-cat="nino">
+  <div class="sec-hd">
+    <span class="dot"></span>
+    <h2>Niño</h2>
+    <span class="sec-blurb">Desde recién nacido hasta junior</span>
+    <span class="sec-n" data-total="10">10 curvas</span>
+  </div>
+  <div class="grid">
+<article class="card" data-cat="nino" data-brand="converse" data-code="#3" data-name="niños converse">
+  <header class="card-hd">
+    <span class="badge">3</span>
+    <div class="ttl">
+      <h3>Niños</h3>
+      <p><b class="bm">Converse</b> &middot; 2gender · Kids</p>
+    </div>
+  </header>
+  <p class="pill">9 tallas&nbsp;&middot;&nbsp;EUR 35–40.5</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="3.5 35 21.5"><td>3.5</td><td>35</td><td>21.5</td></tr><tr data-k="4 36 22"><td>4</td><td>36</td><td>22</td></tr><tr data-k="4.5 37 22.5"><td>4.5</td><td>37</td><td>22.5</td></tr><tr data-k="5 37.5 23"><td>5</td><td>37.5</td><td>23</td></tr><tr data-k="5.5 38 23.5"><td>5.5</td><td>38</td><td>23.5</td></tr><tr data-k="6 38.5 24"><td>6</td><td>38.5</td><td>24</td></tr><tr data-k="6.5 39 24.5"><td>6.5</td><td>39</td><td>24.5</td></tr><tr data-k="7 40 25"><td>7</td><td>40</td><td>25</td></tr><tr data-k="7.5 40.5 25.5"><td>7.5</td><td>40.5</td><td>25.5</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="nino" data-brand="converse" data-code="#4" data-name="juvenil converse">
+  <header class="card-hd">
+    <span class="badge">4</span>
+    <div class="ttl">
+      <h3>Juvenil</h3>
+      <p><b class="bm">Converse</b> &middot; 3gender · Youth</p>
+    </div>
+  </header>
+  <p class="pill">12 tallas&nbsp;&middot;&nbsp;EUR 27–35</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="10.5 27 17"><td>10.5</td><td>27</td><td>17</td></tr><tr data-k="11 28 17"><td>11</td><td>28</td><td>17</td></tr><tr data-k="11.5 28.5 17.5"><td>11.5</td><td>28.5</td><td>17.5</td></tr><tr data-k="12 29 18"><td>12</td><td>29</td><td>18</td></tr><tr data-k="12.5 30 18.5"><td>12.5</td><td>30</td><td>18.5</td></tr><tr data-k="13 31 19"><td>13</td><td>31</td><td>19</td></tr><tr data-k="13.5 31.5 19"><td>13.5</td><td>31.5</td><td>19</td></tr><tr data-k="1 32 19.5"><td>1</td><td>32</td><td>19.5</td></tr><tr data-k="1.5 33 20"><td>1.5</td><td>33</td><td>20</td></tr><tr data-k="2 33.5 20.5"><td>2</td><td>33.5</td><td>20.5</td></tr><tr data-k="2.5 34 21"><td>2.5</td><td>34</td><td>21</td></tr><tr data-k="3 35 22"><td>3</td><td>35</td><td>22</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="nino" data-brand="converse" data-code="#5" data-name="infante converse">
+  <header class="card-hd">
+    <span class="badge">5</span>
+    <div class="ttl">
+      <h3>Infante</h3>
+      <p><b class="bm">Converse</b> &middot; 7gender · Infant / Toddler</p>
+    </div>
+  </header>
+  <p class="pill">17 tallas&nbsp;&middot;&nbsp;EUR 18–27</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="2 18 11"><td>2</td><td>18</td><td>11</td></tr><tr data-k="3 19 11"><td>3</td><td>19</td><td>11</td></tr><tr data-k="4 20 11.5"><td>4</td><td>20</td><td>11.5</td></tr><tr data-k="4.5 20.5 12"><td>4.5</td><td>20.5</td><td>12</td></tr><tr data-k="5 21 12.5"><td>5</td><td>21</td><td>12.5</td></tr><tr data-k="5.5 21.5 13"><td>5.5</td><td>21.5</td><td>13</td></tr><tr data-k="6 22 13"><td>6</td><td>22</td><td>13</td></tr><tr data-k="6.5 22.5 13.5"><td>6.5</td><td>22.5</td><td>13.5</td></tr><tr data-k="7 23 14"><td>7</td><td>23</td><td>14</td></tr><tr data-k="7.5 23.5 14.5"><td>7.5</td><td>23.5</td><td>14.5</td></tr><tr data-k="8 24 15"><td>8</td><td>24</td><td>15</td></tr><tr data-k="8.5 24.5 15"><td>8.5</td><td>24.5</td><td>15</td></tr><tr data-k="9 25 15.5"><td>9</td><td>25</td><td>15.5</td></tr><tr data-k="9.5 25.5 16"><td>9.5</td><td>25.5</td><td>16</td></tr><tr data-k="10 26 16.5"><td>10</td><td>26</td><td>16.5</td></tr><tr data-k="10.5 26.5 17"><td>10.5</td><td>26.5</td><td>17</td></tr><tr data-k="11 27 17.5"><td>11</td><td>27</td><td>17.5</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="nino" data-brand="converse" data-code="#6" data-name="recién nacido converse">
+  <header class="card-hd">
+    <span class="badge">6</span>
+    <div class="ttl">
+      <h3>Recién nacido</h3>
+      <p><b class="bm">Converse</b> &middot; 8gender · Crib</p>
+    </div>
+  </header>
+  <p class="pill">4 tallas&nbsp;&middot;&nbsp;EUR 17–20</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="1 17 10.5"><td>1</td><td>17</td><td>10.5</td></tr><tr data-k="2 18 11"><td>2</td><td>18</td><td>11</td></tr><tr data-k="3 19 11.5"><td>3</td><td>19</td><td>11.5</td></tr><tr data-k="4 20 12"><td>4</td><td>20</td><td>12</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="nino" data-brand="converse" data-code="#11" data-name="junior converse">
+  <header class="card-hd">
+    <span class="badge">11</span>
+    <div class="ttl">
+      <h3>Junior</h3>
+      <p><b class="bm">Converse</b> &middot; 6gender</p>
+    </div>
+  </header>
+  <p class="pill">21 tallas&nbsp;&middot;&nbsp;EUR 26–40</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="10 26 16.5"><td>10</td><td>26</td><td>16.5</td></tr><tr data-k="10.5 27 17"><td>10.5</td><td>27</td><td>17</td></tr><tr data-k="11 28 17"><td>11</td><td>28</td><td>17</td></tr><tr data-k="11.5 28.5 17.5"><td>11.5</td><td>28.5</td><td>17.5</td></tr><tr data-k="12 29 18"><td>12</td><td>29</td><td>18</td></tr><tr data-k="12.5 30 18.5"><td>12.5</td><td>30</td><td>18.5</td></tr><tr data-k="13 31 19"><td>13</td><td>31</td><td>19</td></tr><tr data-k="13.5 31.5 19"><td>13.5</td><td>31.5</td><td>19</td></tr><tr data-k="1 32 19.5"><td>1</td><td>32</td><td>19.5</td></tr><tr data-k="1.5 33 20"><td>1.5</td><td>33</td><td>20</td></tr><tr data-k="2 33.5 20.5"><td>2</td><td>33.5</td><td>20.5</td></tr><tr data-k="2.5 34 21"><td>2.5</td><td>34</td><td>21</td></tr><tr data-k="3 35 21.5"><td>3</td><td>35</td><td>21.5</td></tr><tr data-k="3.5 35.5 21.5"><td>3.5</td><td>35.5</td><td>21.5</td></tr><tr data-k="4 36 22"><td>4</td><td>36</td><td>22</td></tr><tr data-k="4.5 37 22.5"><td>4.5</td><td>37</td><td>22.5</td></tr><tr data-k="5 37.5 23"><td>5</td><td>37.5</td><td>23</td></tr><tr data-k="5.5 38 23.5"><td>5.5</td><td>38</td><td>23.5</td></tr><tr data-k="6 38.5 24"><td>6</td><td>38.5</td><td>24</td></tr><tr data-k="6.5 39 24.5"><td>6.5</td><td>39</td><td>24.5</td></tr><tr data-k="7 40 25"><td>7</td><td>40</td><td>25</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="nino" data-brand="fila" data-code="F" data-name="baby fila">
+  <header class="card-hd">
+    <span class="badge">F</span>
+    <div class="ttl">
+      <h3>Baby</h3>
+      <p><b class="bm">FILA</b> &middot; 0 a 4 años</p>
+    </div>
+  </header>
+  <p class="pill">15 tallas&nbsp;&middot;&nbsp;EUR 19–27.5</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="3.5C 19 9.5"><td>3.5C</td><td>19</td><td>9.5</td></tr><tr data-k="4C 19.5 10"><td>4C</td><td>19.5</td><td>10</td></tr><tr data-k="4.5C 20 10.5"><td>4.5C</td><td>20</td><td>10.5</td></tr><tr data-k="5C 21 11"><td>5C</td><td>21</td><td>11</td></tr><tr data-k="5.5C 21.5 11.5"><td>5.5C</td><td>21.5</td><td>11.5</td></tr><tr data-k="6C 22 12"><td>6C</td><td>22</td><td>12</td></tr><tr data-k="6.5C 23 12.5"><td>6.5C</td><td>23</td><td>12.5</td></tr><tr data-k="7C 23.5 13"><td>7C</td><td>23.5</td><td>13</td></tr><tr data-k="7.5C 24 13.5"><td>7.5C</td><td>24</td><td>13.5</td></tr><tr data-k="8C 25 14"><td>8C</td><td>25</td><td>14</td></tr><tr data-k="8.5C 25.5 14.5"><td>8.5C</td><td>25.5</td><td>14.5</td></tr><tr data-k="9C 26 15"><td>9C</td><td>26</td><td>15</td></tr><tr data-k="9.5C 26.5 15.5"><td>9.5C</td><td>26.5</td><td>15.5</td></tr><tr data-k="10C 27 16"><td>10C</td><td>27</td><td>16</td></tr><tr data-k="10.5C 27.5 16.5"><td>10.5C</td><td>27.5</td><td>16.5</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="nino" data-brand="fila" data-code="F" data-name="kids fila">
+  <header class="card-hd">
+    <span class="badge">F</span>
+    <div class="ttl">
+      <h3>Kids</h3>
+      <p><b class="bm">FILA</b> &middot; 5 a 7 años</p>
+    </div>
+  </header>
+  <p class="pill">10 tallas&nbsp;&middot;&nbsp;EUR 28–34</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="11C 28 17"><td>11C</td><td>28</td><td>17</td></tr><tr data-k="11.5C 29 18"><td>11.5C</td><td>29</td><td>18</td></tr><tr data-k="12C 29.5 18"><td>12C</td><td>29.5</td><td>18</td></tr><tr data-k="12.5C 30 19"><td>12.5C</td><td>30</td><td>19</td></tr><tr data-k="13C 31 19"><td>13C</td><td>31</td><td>19</td></tr><tr data-k="13.5 31.5 20"><td>13.5</td><td>31.5</td><td>20</td></tr><tr data-k="1Y 32 20"><td>1Y</td><td>32</td><td>20</td></tr><tr data-k="1.5Y 33 21"><td>1.5Y</td><td>33</td><td>21</td></tr><tr data-k="2Y 33.5 21"><td>2Y</td><td>33.5</td><td>21</td></tr><tr data-k="2.5Y 34 22"><td>2.5Y</td><td>34</td><td>22</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="nino" data-brand="fila" data-code="F" data-name="young fila">
+  <header class="card-hd">
+    <span class="badge">F</span>
+    <div class="ttl">
+      <h3>Young</h3>
+      <p><b class="bm">FILA</b> &middot; 8 a 16 años</p>
+    </div>
+  </header>
+  <p class="pill">8 tallas&nbsp;&middot;&nbsp;EUR 34.5–38.5</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="3Y 34.5 22"><td>3Y</td><td>34.5</td><td>22</td></tr><tr data-k="3.5Y 35 23"><td>3.5Y</td><td>35</td><td>23</td></tr><tr data-k="4Y 35.5 23"><td>4Y</td><td>35.5</td><td>23</td></tr><tr data-k="4.5Y 36 23.5*"><td>4.5Y</td><td>36</td><td>23.5*</td></tr><tr data-k="5Y 36.5 23.5*"><td>5Y</td><td>36.5</td><td>23.5*</td></tr><tr data-k="5.5Y 37 24*"><td>5.5Y</td><td>37</td><td>24*</td></tr><tr data-k="6Y 38 24*"><td>6Y</td><td>38</td><td>24*</td></tr><tr data-k="7Y 38.5 25"><td>7Y</td><td>38.5</td><td>25</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="nino" data-brand="umbro" data-code="U" data-name="niños umbro">
+  <header class="card-hd">
+    <span class="badge">U</span>
+    <div class="ttl">
+      <h3>Niños</h3>
+      <p><b class="bm">Umbro</b> &middot; Zapatillas</p>
+    </div>
+  </header>
+  <p class="pill">18 tallas&nbsp;&middot;&nbsp;EUR 27.5–39</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="10XC 27.5 16.5"><td>10XC</td><td>27.5</td><td>16.5</td></tr><tr data-k="11C 28 17"><td>11C</td><td>28</td><td>17</td></tr><tr data-k="11XC 28.5 17.5"><td>11XC</td><td>28.5</td><td>17.5</td></tr><tr data-k="12C 29.5 18"><td>12C</td><td>29.5</td><td>18</td></tr><tr data-k="12XC 30 19"><td>12XC</td><td>30</td><td>19</td></tr><tr data-k="13C 31 19"><td>13C</td><td>31</td><td>19</td></tr><tr data-k="13XC 32 19.5"><td>13XC</td><td>32</td><td>19.5</td></tr><tr data-k="1Y 32 20"><td>1Y</td><td>32</td><td>20</td></tr><tr data-k="1XY 33 20.5"><td>1XY</td><td>33</td><td>20.5</td></tr><tr data-k="2Y 34 21"><td>2Y</td><td>34</td><td>21</td></tr><tr data-k="2XY 34 21.5"><td>2XY</td><td>34</td><td>21.5</td></tr><tr data-k="3Y 35 22"><td>3Y</td><td>35</td><td>22</td></tr><tr data-k="3XY 36 22.5"><td>3XY</td><td>36</td><td>22.5</td></tr><tr data-k="4Y 36 23"><td>4Y</td><td>36</td><td>23</td></tr><tr data-k="4XY 36.5 23.5*"><td>4XY</td><td>36.5</td><td>23.5*</td></tr><tr data-k="5Y 38 23.5*"><td>5Y</td><td>38</td><td>23.5*</td></tr><tr data-k="5XY 38 24*"><td>5XY</td><td>38</td><td>24*</td></tr><tr data-k="6Y 39 24*"><td>6Y</td><td>39</td><td>24*</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="nino" data-brand="umbro" data-code="U" data-name="infant umbro">
+  <header class="card-hd">
+    <span class="badge">U</span>
+    <div class="ttl">
+      <h3>Infant</h3>
+      <p><b class="bm">Umbro</b> &middot; Zapatillas</p>
+    </div>
+  </header>
+  <p class="pill">14 tallas&nbsp;&middot;&nbsp;EUR 19–27</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="3XC 19 9.5"><td>3XC</td><td>19</td><td>9.5</td></tr><tr data-k="4C 20 10"><td>4C</td><td>20</td><td>10</td></tr><tr data-k="4XC 20 10.5"><td>4XC</td><td>20</td><td>10.5</td></tr><tr data-k="5C 21 11"><td>5C</td><td>21</td><td>11</td></tr><tr data-k="5XC 22 12"><td>5XC</td><td>22</td><td>12</td></tr><tr data-k="6C 22 12"><td>6C</td><td>22</td><td>12</td></tr><tr data-k="6XC 23 12.5"><td>6XC</td><td>23</td><td>12.5</td></tr><tr data-k="7C 24 13"><td>7C</td><td>24</td><td>13</td></tr><tr data-k="7XC 24 13.5"><td>7XC</td><td>24</td><td>13.5</td></tr><tr data-k="8C 25 14"><td>8C</td><td>25</td><td>14</td></tr><tr data-k="8XC 26 14.5"><td>8XC</td><td>26</td><td>14.5</td></tr><tr data-k="9C 26 15"><td>9C</td><td>26</td><td>15</td></tr><tr data-k="9XC 26.5 15.5"><td>9XC</td><td>26.5</td><td>15.5</td></tr><tr data-k="10C 27 16"><td>10C</td><td>27</td><td>16</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+  </div>
+</section>
+<section class="sec" data-cat="sandalia">
+  <div class="sec-hd">
+    <span class="dot"></span>
+    <h2>Sandalia</h2>
+    <span class="sec-blurb">Escala propia de sandalias</span>
+    <span class="sec-n" data-total="3">3 curvas</span>
+  </div>
+  <div class="grid">
+<article class="card" data-cat="sandalia" data-brand="converse" data-code="#9" data-name="sandalia unisex converse">
+  <header class="card-hd">
+    <span class="badge">9</span>
+    <div class="ttl">
+      <h3>Sandalia unisex</h3>
+      <p><b class="bm">Converse</b> &middot; Sandal code</p>
+    </div>
+  </header>
+  <p class="pill">21 tallas&nbsp;&middot;&nbsp;EUR 35–47.5</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US H</th><th scope="col">US M</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="3 4 35 21"><td>3</td><td>4</td><td>35</td><td>21</td></tr><tr data-k="3.5 4.5 35.5 21.5"><td>3.5</td><td>4.5</td><td>35.5</td><td>21.5</td></tr><tr data-k="4 5 36 22"><td>4</td><td>5</td><td>36</td><td>22</td></tr><tr data-k="4.5 5.5 37 22.5"><td>4.5</td><td>5.5</td><td>37</td><td>22.5</td></tr><tr data-k="5 6 37.5 23"><td>5</td><td>6</td><td>37.5</td><td>23</td></tr><tr data-k="5.5 6.5 38 23.5"><td>5.5</td><td>6.5</td><td>38</td><td>23.5</td></tr><tr data-k="6 7 38.5 24"><td>6</td><td>7</td><td>38.5</td><td>24</td></tr><tr data-k="6.5 7.5 39 24.5"><td>6.5</td><td>7.5</td><td>39</td><td>24.5</td></tr><tr data-k="7 8 40 25"><td>7</td><td>8</td><td>40</td><td>25</td></tr><tr data-k="7.5 8.5 40.5 25.5"><td>7.5</td><td>8.5</td><td>40.5</td><td>25.5</td></tr><tr data-k="8 9 41 26"><td>8</td><td>9</td><td>41</td><td>26</td></tr><tr data-k="8.5 9.5 42 26.5"><td>8.5</td><td>9.5</td><td>42</td><td>26.5</td></tr><tr data-k="9 10 42.5 27"><td>9</td><td>10</td><td>42.5</td><td>27</td></tr><tr data-k="9.5 10.5 43 27.5"><td>9.5</td><td>10.5</td><td>43</td><td>27.5</td></tr><tr data-k="10 11 44 28"><td>10</td><td>11</td><td>44</td><td>28</td></tr><tr data-k="10.5 11.5 44.5 28.5"><td>10.5</td><td>11.5</td><td>44.5</td><td>28.5</td></tr><tr data-k="11 12 45 29"><td>11</td><td>12</td><td>45</td><td>29</td></tr><tr data-k="11.5 12.5 46 29.5"><td>11.5</td><td>12.5</td><td>46</td><td>29.5</td></tr><tr data-k="12 13 46.5 30"><td>12</td><td>13</td><td>46.5</td><td>30</td></tr><tr data-k="12.5 13.5 47 30.5"><td>12.5</td><td>13.5</td><td>47</td><td>30.5</td></tr><tr data-k="13 14 47.5 31"><td>13</td><td>14</td><td>47.5</td><td>31</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="sandalia" data-brand="converse" data-code="#9A" data-name="sandalia mujer converse">
+  <header class="card-hd">
+    <span class="badge">9A</span>
+    <div class="ttl">
+      <h3>Sandalia mujer</h3>
+      <p><b class="bm">Converse</b> &middot; Sandal code</p>
+    </div>
+  </header>
+  <p class="pill">19 tallas&nbsp;&middot;&nbsp;EUR 35–46.5</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US M</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="4 35 21"><td>4</td><td>35</td><td>21</td></tr><tr data-k="4.5 35.5 21.5"><td>4.5</td><td>35.5</td><td>21.5</td></tr><tr data-k="5 36 22"><td>5</td><td>36</td><td>22</td></tr><tr data-k="5.5 37 22.5"><td>5.5</td><td>37</td><td>22.5</td></tr><tr data-k="6 37.5 23"><td>6</td><td>37.5</td><td>23</td></tr><tr data-k="6.5 38 23.5"><td>6.5</td><td>38</td><td>23.5</td></tr><tr data-k="7 38.5 24"><td>7</td><td>38.5</td><td>24</td></tr><tr data-k="7.5 39 24.5"><td>7.5</td><td>39</td><td>24.5</td></tr><tr data-k="8 40 25"><td>8</td><td>40</td><td>25</td></tr><tr data-k="8.5 40.5 25.5"><td>8.5</td><td>40.5</td><td>25.5</td></tr><tr data-k="9 41 26"><td>9</td><td>41</td><td>26</td></tr><tr data-k="9.5 42 26.5"><td>9.5</td><td>42</td><td>26.5</td></tr><tr data-k="10 42.5 27"><td>10</td><td>42.5</td><td>27</td></tr><tr data-k="10.5 43 27.5"><td>10.5</td><td>43</td><td>27.5</td></tr><tr data-k="11 44 28"><td>11</td><td>44</td><td>28</td></tr><tr data-k="11.5 44.5 28.5"><td>11.5</td><td>44.5</td><td>28.5</td></tr><tr data-k="12 45 29"><td>12</td><td>45</td><td>29</td></tr><tr data-k="12.5 46 29.5"><td>12.5</td><td>46</td><td>29.5</td></tr><tr data-k="13 46.5 30"><td>13</td><td>46.5</td><td>30</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+<article class="card" data-cat="sandalia" data-brand="converse" data-code="#9B" data-name="sandalia hombre converse">
+  <header class="card-hd">
+    <span class="badge">9B</span>
+    <div class="ttl">
+      <h3>Sandalia hombre</h3>
+      <p><b class="bm">Converse</b> &middot; Sandal code</p>
+    </div>
+  </header>
+  <p class="pill">21 tallas&nbsp;&middot;&nbsp;EUR 35–47.5</p>
+  <div class="twrap"><div class="tw">
+    <table>
+      <thead><tr><th scope="col">US H</th><th scope="col">EUR</th><th scope="col">CM</th></tr></thead>
+      <tbody><tr data-k="3 35 21"><td>3</td><td>35</td><td>21</td></tr><tr data-k="3.5 35.5 21.5"><td>3.5</td><td>35.5</td><td>21.5</td></tr><tr data-k="4 36 22"><td>4</td><td>36</td><td>22</td></tr><tr data-k="4.5 37 22.5"><td>4.5</td><td>37</td><td>22.5</td></tr><tr data-k="5 37.5 23"><td>5</td><td>37.5</td><td>23</td></tr><tr data-k="5.5 38 23.5"><td>5.5</td><td>38</td><td>23.5</td></tr><tr data-k="6 38.5 24"><td>6</td><td>38.5</td><td>24</td></tr><tr data-k="6.5 39 24.5"><td>6.5</td><td>39</td><td>24.5</td></tr><tr data-k="7 40 25"><td>7</td><td>40</td><td>25</td></tr><tr data-k="7.5 40.5 25.5"><td>7.5</td><td>40.5</td><td>25.5</td></tr><tr data-k="8 41 26"><td>8</td><td>41</td><td>26</td></tr><tr data-k="8.5 42 26.5"><td>8.5</td><td>42</td><td>26.5</td></tr><tr data-k="9 42.5 27"><td>9</td><td>42.5</td><td>27</td></tr><tr data-k="9.5 43 27.5"><td>9.5</td><td>43</td><td>27.5</td></tr><tr data-k="10 44 28"><td>10</td><td>44</td><td>28</td></tr><tr data-k="10.5 44.5 28.5"><td>10.5</td><td>44.5</td><td>28.5</td></tr><tr data-k="11 45 29"><td>11</td><td>45</td><td>29</td></tr><tr data-k="11.5 46 29.5"><td>11.5</td><td>46</td><td>29.5</td></tr><tr data-k="12 46.5 30"><td>12</td><td>46.5</td><td>30</td></tr><tr data-k="12.5 47 30.5"><td>12.5</td><td>47</td><td>30.5</td></tr><tr data-k="13 47.5 31"><td>13</td><td>47.5</td><td>31</td></tr></tbody>
+    </table>
+  </div></div>
+</article>
+  </div>
+</section>
+    <div class="colophon">
+      <div class="col">
+        <h4>Cómo leer las columnas</h4>
+        <p><b>US H</b> y <b>US M</b> son la talla US de hombre y de mujer dentro de una misma curva. <b>CM</b> es el largo del pie en centímetros, tomado de la fila japonesa del documento original.</p>
+      </div>
+      <div class="col">
+        <h4>Notaciones por marca</h4>
+        <p><b>Converse</b> usa medios puntos (<code>9.5</code>). <b>FILA</b> y <b>Umbro</b> usan la letra X para el medio punto: <code>6X</code> equivale a 6½. Las tallas de niño llevan <code>C</code> (child) o <code>Y</code> (youth).</p>
+        <p>El asterisco (*) en centímetros es de la guía original: el largo no cambia, pero el ancho de la horma aumenta.</p>
+      </div>
+      <div class="col">
+        <h4>Origen de los datos</h4>
+        <p><b>Converse</b>: Material Conversion ID Chart (se omitieron las filas UK y BR y la curva de producción). Códigos <code>#8</code> <code>#8A</code> <code>#8B</code> antes eran <code>#10</code> <code>#10A</code> <code>#10B</code>; <code>#9</code> <code>#9A</code> <code>#9B</code> antes eran <code>#12</code>.</p>
+        <p><b>FILA</b> y <b>Umbro</b>: guías oficiales de tallas. En Umbro, sandalias hombre y mujer usan la misma escala que las zapatillas, por eso van en una sola ficha.</p>
+        <p class="fine">Documento de consulta interna, no es una publicación oficial de ninguna marca.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  var q = document.getElementById('q'), clr = document.getElementById('clr');
+  var tally = document.getElementById('tally'), hint = document.getElementById('hint');
+  var cards = [].slice.call(document.querySelectorAll('.card'));
+  var secs  = [].slice.call(document.querySelectorAll('.sec'));
+  var segs  = [].slice.call(document.querySelectorAll('.seg.segc'));
+  var brs   = [].slice.call(document.querySelectorAll('.segs [data-brand]'));
+  var wraps = [].slice.call(document.querySelectorAll('.twrap'));
+  var empty = document.getElementById('empty'), emptyTxt = document.getElementById('empty-txt');
+  var cat = 'all', brand = 'all';
+
+  function fades(){
+    wraps.forEach(function(w){
+      var t = w.querySelector('.tw');
+      w.classList.toggle('more', t.scrollHeight - t.scrollTop - t.clientHeight > 6);
+    });
+  }
+
+  function apply(){
+    var term = q.value.trim().replace(',', '.').toLowerCase();
+    clr.style.display = term ? 'block' : 'none';
+    var shown = 0, withHits = 0;
+
+    cards.forEach(function(card){
+      var catOk = (cat === 'all' || card.dataset.cat === cat) &&
+                  (brand === 'all' || card.dataset.brand === brand);
+      if(!catOk){ card.classList.add('hidden'); return; }
+      shown++;
+      var rows = [].slice.call(card.querySelectorAll('tbody tr'));
+      if(!term){
+        rows.forEach(function(r){ r.classList.remove('hit','off'); });
+        card.classList.remove('hidden');
+        return;
+      }
+      var nameHit = card.dataset.code.toLowerCase().indexOf(term) > -1 ||
+                    card.dataset.name.indexOf(term) > -1;
+      var found = 0;
+      rows.forEach(function(r){
+        var hit = nameHit || r.dataset.k.split(' ').some(function(v){
+          return v === term || v.indexOf(term) === 0;
+        });
+        r.classList.toggle('hit', hit && !nameHit);
+        r.classList.toggle('off', !hit);
+        if(hit) found++;
+      });
+      card.classList.toggle('hidden', found === 0);
+      if(found) withHits++;
+    });
+
+    secs.forEach(function(s){
+      var live = s.querySelectorAll('.card:not(.hidden)').length;
+      s.classList.toggle('hidden', live === 0);
+      var n = s.querySelector('.sec-n');
+      n.textContent = (term || brand !== 'all')
+        ? live + ' de ' + n.dataset.total + ' curvas'
+        : n.dataset.total + ' curvas';
+    });
+
+    empty.classList.toggle('on', !!term && withHits === 0);
+    if(term && withHits === 0){
+      var scope = [];
+      if(brand !== 'all') scope.push('de ' + brand.charAt(0).toUpperCase() + brand.slice(1));
+      if(cat !== 'all') scope.push('de este segmento');
+      emptyTxt.textContent = 'Ninguna curva ' + scope.join(' ni ') +
+                             (scope.length ? ' ' : '') + 'incluye el valor ' + term + '.';
+    }
+
+    if(term){
+      tally.style.display = 'block'; hint.style.display = 'none';
+      tally.innerHTML = '<b>' + withHits + '</b> de ' + shown + ' curvas con ' + term;
+    } else {
+      tally.style.display = 'none'; hint.style.display = '';
+    }
+    fades();
+  }
+
+  ['input','keyup','change','search','paste','cut'].forEach(function(ev){
+    q.addEventListener(ev, function(){ setTimeout(apply, 0); });
+  });
+  clr.addEventListener('click', function(){ q.value=''; q.focus(); apply(); });
+  segs.forEach(function(b){
+    b.addEventListener('click', function(){
+      cat = b.dataset.cat;
+      segs.forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+      apply();
+    });
+  });
+  brs.forEach(function(b){
+    b.addEventListener('click', function(){
+      brand = b.dataset.brand;
+      brs.forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+      apply();
+    });
+  });
+  wraps.forEach(function(w){
+    w.querySelector('.tw').addEventListener('scroll', function(e){
+      var t = e.target;
+      w.classList.toggle('more', t.scrollHeight - t.scrollTop - t.clientHeight > 6);
+    }, {passive:true});
+  });
+  window.addEventListener('resize', fades);
+  document.addEventListener('keydown', function(e){
+    if(e.key === '/' && document.activeElement !== q){ e.preventDefault(); q.focus(); }
+    if(e.key === 'Escape' && document.activeElement === q){ q.value=''; apply(); }
+  });
+  fades();
+})();
+</script>
