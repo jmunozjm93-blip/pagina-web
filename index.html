@@ -13,25 +13,30 @@
   .panel { position:relative; flex:1 1 50%; display:flex; align-items:flex-end; text-decoration:none; color:#fff; overflow:hidden; transition:flex .45s cubic-bezier(.4,0,.2,1); }
   .split:hover .panel { flex:1 1 44%; }
   .split .panel:hover { flex:1 1 56%; }
-  .panel::before { content:""; position:absolute; inset:0; transition:background .4s; }
+  .panel::before { content:""; position:absolute; inset:0; z-index:1; transition:background .4s; }
   .panel .copy { position:relative; z-index:2; width:100%; padding:48px; display:flex; flex-direction:column; gap:14px; }
   .kicker { font-size:.85rem; letter-spacing:.14em; text-transform:uppercase; opacity:.85; }
   h1 { font-size:clamp(3rem,6vw,5.5rem); line-height:.88; font-weight:900; letter-spacing:-.03em; text-transform:uppercase; text-shadow:0 2px 14px rgba(0,0,0,.5); }
-  .btn { align-self:flex-start; margin-top:18px; padding:14px 34px; font-weight:700; font-size:1rem; letter-spacing:.02em; transition:transform .2s, box-shadow .2s; }
+  .btn { align-self:flex-start; margin-top:18px; padding:14px 34px; font-weight:700; font-size:1rem; letter-spacing:.02em; background:#fff; color:#111; transition:transform .2s, box-shadow .2s; }
   .panel:hover .btn { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.25); }
-  .logo-top { position:absolute; top:40px; left:48px; z-index:2; }
 
-  /* ---------- CONVERSE ---------- */
-  .converse { background:#e9e9e9 url("img/converse-collage.jpg") center/cover no-repeat; }
-  .converse::before { background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,.72) 100%); }
-  .converse:hover::before { background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,.62) 100%); }
-  .converse .btn { background:#fff; color:#111; }
+  /* ---------- CONVERSE / UMBRO / FILA (carrusel) ---------- */
+  .multi { background:#111; }
+  .multi::before { background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,.72) 100%); }
+  .multi:hover::before { background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,.62) 100%); }
+  .slide { position:absolute; inset:0; background-size:cover; background-position:center; opacity:0; transition:opacity 1.2s ease; will-change:opacity; }
+  .slide.on { opacity:1; }
+  .multi h1 { position:relative; height:.88em; }
+  .multi h1 span { position:absolute; left:0; bottom:0; opacity:0; transform:translateY(8px); transition:opacity .6s ease, transform .6s ease; white-space:nowrap; }
+  .multi h1 span.on { opacity:1; transform:none; }
+  .dots { display:flex; gap:8px; margin-top:8px; }
+  .dots i { width:26px; height:3px; background:rgba(255,255,255,.35); transition:background .3s; }
+  .dots i.on { background:#fff; }
 
   /* ---------- STEVE MADDEN ---------- */
   .madden { background:#0b0b0b url("img/steve-madden-hero.jpg") center/cover no-repeat; }
   .madden::before { background:linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.15) 40%,rgba(0,0,0,.78) 100%); }
   .madden:hover::before { background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,.05) 40%,rgba(0,0,0,.7) 100%); }
-  .madden .btn { background:#fff; color:#111; }
 
   footer { position:fixed; bottom:10px; left:50%; transform:translateX(-50%); z-index:5; font-size:.72rem; color:#ccc; background:rgba(0,0,0,.55); padding:4px 12px; border-radius:999px; white-space:nowrap; }
 
@@ -39,7 +44,6 @@
     .split { flex-direction:column; }
     .panel, .split:hover .panel, .split .panel:hover { flex:none; min-height:100vh; }
     .panel .copy { padding:40px 24px; }
-    .logo-top { top:28px; left:24px; }
     footer { position:static; transform:none; display:block; text-align:center; background:#111; color:#888; border-radius:0; padding:10px; }
   }
 </style>
@@ -47,10 +51,14 @@
 <body>
 <div class="split">
 
-  <a class="panel converse" href="Dashboard%20sell%20out.html" aria-label="Dashboard Sell Out Converse">
+  <a class="panel multi" href="Dashboard%20sell%20out.html" aria-label="Dashboard Sell Out: Converse, Umbro y Fila">
+    <div class="slide on" style="background-image:url('img/converse-collage.jpg')"></div>
+    <div class="slide" style="background-image:url('img/umbro.jpg')"></div>
+    <div class="slide" style="background-image:url('img/fila.jpg')"></div>
     <div class="copy">
       <div class="kicker">Sell Out</div>
-      <h1>Converse</h1>
+      <h1><span class="on">Converse</span><span>Umbro</span><span>Fila</span></h1>
+      <div class="dots"><i class="on"></i><i></i><i></i></div>
       <span class="btn">Dashboard</span>
     </div>
   </a>
@@ -65,5 +73,20 @@
 
 </div>
 <footer>Grupo Depor · actualizado al 15 de septiembre de 2026</footer>
+
+<script>
+(function(){
+  var slides=document.querySelectorAll('.multi .slide'),
+      names=document.querySelectorAll('.multi h1 span'),
+      dots=document.querySelectorAll('.multi .dots i'),
+      i=0, n=slides.length;
+  function go(k){
+    [slides,names,dots].forEach(function(list){
+      list.forEach(function(el,j){ el.classList.toggle('on', j===k); });
+    });
+  }
+  setInterval(function(){ i=(i+1)%n; go(i); }, 4500);
+})();
+</script>
 </body>
 </html>
