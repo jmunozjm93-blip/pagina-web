@@ -105,7 +105,8 @@ el('names').innerHTML = Convertir.TIPOS.map(t => `<div>${ETIQ[t.tipo]}: <code>${
 const token = () => localStorage.getItem('gh_token') || '';
 el('token').value = token();
 async function gh(path, opts = {}) {
-  const r = await fetch(API + path, Object.assign({ headers: { Authorization: 'Bearer ' + token(), Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }, opts));
+  // cache: no-store → GitHub manda max-age=60 y el navegador devolvía listas viejas (sha desactualizado)
+  const r = await fetch(API + path, Object.assign({ cache: 'no-store', headers: { Authorization: 'Bearer ' + token(), Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }, opts));
   if (r.status === 404) return null;
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(`GitHub ${r.status}: ${j.message || r.statusText}`);
@@ -120,12 +121,23 @@ async function shaDe(path) {
   return e ? e.sha : null;
 }
 async function subir(path, texto, mensaje) {
-  const sha = await shaDe(path);
-  const body = { message: mensaje, content: b64(texto), branch: BRANCH };
-  if (sha) body.sha = sha;
-  const r = await gh(`/contents/${path}`, { method: 'PUT', body: JSON.stringify(body) });
-  return r.commit;
+  let sha = await shaDe(path);
+  for (let intento = 1; ; intento++) {
+    const body = { message: mensaje, content: b64(texto), branch: BRANCH };
+    if (sha) body.sha = sha;
+    try {
+      const r = await gh(`/contents/${path}`, { method: 'PUT', body: JSON.stringify(body) });
+      return r.commit;
+    } catch (e) {
+      // el archivo cambió entre la lectura y la escritura (o ya existía): se relee el sha y se reintenta
+      if (intento < 5 && /GitHub (409|422)/.test(e.message)) { await new Promise(r => setTimeout(r, 800 * intento)); sha = await shaDe(path); continue; }
+      throw e;
+    }
+  }
 }
+// las subidas van de a una: dos a la vez chocan al actualizar semanas.json
+let colaSubida = Promise.resolve();
+const enCola = fn => { const p = colaSubida.then(fn, fn); colaSubida = p.catch(() => {}); return p; };
 async function leerManifiesto() {
   const r = await gh(`/contents/data/semanas.json?ref=${BRANCH}`);
   if (!r) return { semanas: {} };
@@ -223,9 +235,11 @@ function siguiente() {
     const bDl = document.createElement('button'); bDl.className = 'sec'; bDl.textContent = 'Descargar JSON';
     acts.append(bUp, bDl);
     bDl.onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([msg.texto], { type: 'application/json' })); a.download = `${info.tipo}.json`; a.click(); };
-    bUp.onclick = async () => {
+    bUp.onclick = () => {
       if (!token()) { setSt(c, 'bad', '✗ Primero guarda el token de GitHub (paso 1).'); return; }
-      bUp.disabled = true; setSt(c, '', 'Subiendo a GitHub…');
+      bUp.disabled = true; setSt(c, '', 'En cola para subir…');
+      enCola(async () => {
+      setSt(c, '', 'Subiendo a GitHub…');
       try {
         const path = `data/w${info.semana}/${info.tipo}.json`;
         const commit = await subir(path, msg.texto, `Semana ${info.semana}: ${ETIQ[info.tipo]} (${file.name})`);
@@ -235,6 +249,7 @@ function siguiente() {
         acts.innerHTML = `<a class="small" href="${commit.html_url}" target="_blank" rel="noopener">Ver commit</a>`;
         cargarEstado();
       } catch (e) { setSt(c, 'bad', '✗ ' + e.message); bUp.disabled = false; }
+      });
     };
     fin();
   };
