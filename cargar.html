@@ -155,13 +155,31 @@ async function registrar(semana, tipo) {
   return m;
 }
 
+// Aviso: el repositorio es público, así que leerlo funciona aunque el token no sirva
+// para escribir. Para saber si puede escribir se manda un PUT con el cuerpo vacío:
+// sin permiso GitHub responde 403 antes de mirar el cuerpo; con permiso responde 422
+// (datos inválidos) y no se escribe nada.
+const AYUDA_403 = 'El token no tiene permiso para escribir en el repositorio.\n' +
+  'Entra a github.com/settings/tokens?type=beta, abre el token y revisa que tenga:\n' +
+  '· Repository access: Only select repositories → pagina-web\n' +
+  '· Permissions → Repository permissions → Contents: Read and write\n' +
+  'Si lo cambias o creas uno nuevo, pégalo aquí y pulsa "Guardar y probar".';
+async function puedeEscribir() {
+  const r = await fetch(`${API}/contents/.permiso`, {
+    method: 'PUT', cache: 'no-store',
+    headers: { Authorization: 'Bearer ' + token(), Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
+    body: '{}'
+  });
+  return r.status !== 403;
+}
+
 el('btnToken').onclick = async () => {
   localStorage.setItem('gh_token', el('token').value.trim());
   el('tokenSt').className = 'st'; el('tokenSt').textContent = 'Probando…';
   try {
     const r = await gh('');
-    const p = r && r.permissions;
-    if (!p || !p.push) throw new Error('El token no tiene permiso de escritura (Contents: Read and write) sobre el repositorio');
+    if (!r) throw new Error('No encuentro el repositorio ' + OWNER + '/' + REPO);
+    if (!(await puedeEscribir())) throw new Error(AYUDA_403);
     el('tokenSt').className = 'st ok'; el('tokenSt').textContent = `✓ Conectado a ${r.full_name} con permiso de escritura`;
     cargarEstado();
   } catch (e) { el('tokenSt').className = 'st bad'; el('tokenSt').textContent = '✗ ' + e.message; }
@@ -250,7 +268,10 @@ function siguiente() {
         setSt(c, 'ok', `✓ Subido a ${path}. GitHub Pages lo publica en 1–2 minutos.`);
         acts.innerHTML = `<a class="small" href="${commit.html_url}" target="_blank" rel="noopener">Ver commit</a>`;
         cargarEstado();
-      } catch (e) { setSt(c, 'bad', '✗ ' + e.message); bUp.disabled = false; }
+      } catch (e) {
+        setSt(c, 'bad', '✗ ' + (/GitHub 403/.test(e.message) ? AYUDA_403 : e.message));
+        bUp.disabled = false;
+      }
       });
     };
     fin();
