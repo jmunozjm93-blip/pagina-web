@@ -1,3 +1,5 @@
+| `data/semanas.json` | Índice de semanas publicadas y qué archivos tiene cada una |
+| `js/acceso.js` | Pantalla de usuario y contraseña del sitio (usuario `depor`) |
 
 Reportes semanales de sell out de Grupo Depor empaquetados como archivos HTML únicos. Se abren con doble clic en cualquier navegador; no necesitan internet, servidor ni Excel.
 

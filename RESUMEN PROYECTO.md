@@ -265,3 +265,13 @@ Al reconvertir la W37 desde los Excel de hoy: métricas idénticas en las 3 lín
 ### Steve Madden (agregado el 15-09-2026)
 
 `Reporte Steve madden WNN.xlsx` (hojas **SKU** y **Tienda**, trae todas las semanas) entra por el mismo `cargar.html` y genera `data/wNN/steve.json` con lo que el dashboard de Steve Madden guarda por semana: `alldata` (CALZADO y ACC: filas con `r.PARIS = [vtaUN, rot, margen, stock, semanas, vtaNeta, vtaUN LY, vtaNeta LY]` y `gt`), `tiendas` (un registro por sucursal × línea), `sucs` y `stores` (detalle por sucursal por modelo). Criterios del dashboard: rotación = venta ÷ (venta + stock), semanas = (venta + stock) ÷ venta, margen ponderado por venta neta; en `stores` entran las filas con unidades o stock. El dashboard de Steve Madden descarga al abrir todas las semanas publicadas (son livianas) y muestra la más nueva por defecto. Verificado contra la W37 embebida: tiendas y detalle idénticos; en SKU el archivo nuevo trae LY (el original lo tenía en 0) y algunos modelos más.
+
+## 12. Acceso al sitio (22-09-2026)
+
+Todas las páginas (`index`, los dos dashboards, `curvas` y `cargar`) cargan `js/acceso.js`, que muestra una pantalla de usuario y contraseña. La sesión queda guardada 30 días en ese navegador. La copia local abierta con doble clic (`file://`) no pide nada.
+
+- **Usuario:** `depor` · **Contraseña:** `SellOut2026` (el archivo guarda solo el SHA‑256 de `usuario:contraseña`, no la clave en texto).
+- Para cambiarla, calcular el nuevo hash y reemplazar `HASH` en `js/acceso.js`; las instrucciones están en el comentario del propio archivo.
+- El enlace "cargar semana" ya no se muestra en la portada: a `cargar.html` se entra escribiendo la dirección.
+
+**Esto es una cortina, no una puerta con llave.** El navegador descarga la página completa antes de pedir la clave, así que alguien con conocimientos puede saltarla. Para acceso real por correo `@comercialdepor.cl` habría que poner el sitio detrás de Cloudflare Access (gratis hasta 50 usuarios, y el correo del dominio ya está en Google Workspace). Eso obliga a mover el sitio desde GitHub Pages a Cloudflare Pages, que no acepta archivos sobre 25 MB: primero hay que adelgazar el dashboard sacando las semanas 27–36 a `data/`, como ya se hace con la 37 en adelante.
