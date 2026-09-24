@@ -275,3 +275,26 @@ Todas las páginas (`index`, los dos dashboards, `curvas` y `cargar`) cargan `js
 - El enlace "cargar semana" ya no se muestra en la portada: a `cargar.html` se entra escribiendo la dirección.
 
 **Esto es una cortina, no una puerta con llave.** El navegador descarga la página completa antes de pedir la clave, así que alguien con conocimientos puede saltarla. Para acceso real por correo `@comercialdepor.cl` habría que poner el sitio detrás de Cloudflare Access (gratis hasta 50 usuarios, y el correo del dominio ya está en Google Workspace). Eso obliga a mover el sitio desde GitHub Pages a Cloudflare Pages, que no acepta archivos sobre 25 MB: primero hay que adelgazar el dashboard sacando las semanas 27–36 a `data/`, como ya se hace con la 37 en adelante.
+
+## 13. Corrección del total general (24-09-2026)
+
+El `_TOTAL` de cada hoja (la fila de indicadores cuando no hay cliente filtrado) calculaba **rotación** y **semanas de stock** promediando los porcentajes de cada cliente. Eso rompe la regla del proyecto: los porcentajes no se promedian.
+
+Ahora se hace igual que el resto del dashboard: se reconstruye el **Stk Inicial** de cada cliente (semanas × venta; si no trae semanas, venta ÷ rotación; y si no vendió, su stock actual), se suman los valores absolutos y recién ahí se divide.
+
+```
+rotación total        = Vta UN total ÷ Stk Inicial total
+semanas de stock total = Stk Inicial total ÷ Vta UN total
+```
+
+Verificado contra la columna "Total general" del propio Excel, que la W37 sí trae (la W38 ya no la incluye):
+
+| Hoja | Antes | Ahora | Excel |
+|---|---|---|---|
+| W37 calzado, semanas | 24,42 | **21,56** | 21,58 |
+| W37 calzado, rotación | 5,09 % | **4,64 %** | 4,63 % |
+| W37 acumulado accesorios, rotación | 4,37 % | **4,22 %** | 4,2176 % (exacto) |
+
+El error más grande estaba en las hojas `.com`: mostraban 24,1 semanas cuando correspondían 9,8.
+
+Se recalcularon los 180 totales embebidos en el HTML (semanas 27–36) y los de `data/w37` y `data/w38`. Los valores **por cliente** nunca estuvieron mal: se copian literal del Excel. Steve Madden usa otra convención (Stk Inicial = stock + venta) y ya agregaba bien.

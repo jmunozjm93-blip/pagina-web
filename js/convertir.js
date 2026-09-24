@@ -144,21 +144,27 @@
     return { retailers, rows: out, gt };
   }
 
-  // _TOTAL: suma de UN, $ y stock; rotación ponderada por venta UN, margen por venta neta,
-  // semanas de stock ponderadas por stock (o stock/venta si ningún cliente trae semanas)
+  // _TOTAL: nunca se promedian porcentajes. Se suman los valores absolutos y recién ahí se divide.
+  //   Stk Inicial de cada cliente = semanas × venta; si no trae semanas, venta ÷ rotación;
+  //   y si no vendió, su stock actual. Después:
+  //     rotación        = Vta UN total ÷ Stk Inicial total
+  //     semanas de stock = Stk Inicial total ÷ Vta UN total
+  //     margen          = Σ(margen × venta neta) ÷ venta neta total
+  // Verificado contra la columna "Total general" del propio Excel (W37 calzado: 21,5822
+  // semanas y 4,6334 % de rotación; acumulado de accesorios: 4,2176 % exacto).
   function totalPonderado(gt) {
-    let v = 0, stk = 0, vn = 0, rotW = 0, mgW = 0, wosW = 0, wosS = 0;
+    let v = 0, stk = 0, vn = 0, si = 0, mgW = 0;
     for (const k in gt) {
       const a = gt[k];
-      v += a[0] || 0; stk += a[3] || 0; vn += a[5] || 0;
-      if (a[1] != null) rotW += a[1] * (a[0] || 0);
+      const pv = a[0] || 0, pstk = a[3] || 0;
+      v += pv; stk += pstk; vn += a[5] || 0;
       if (a[2] != null) mgW += a[2] * (a[5] || 0);
-      if (a[4] != null) { wosW += a[4] * (a[3] || 0); wosS += a[3] || 0; }
+      if (a[4] != null && pv > 0) si += a[4] * pv;
+      else if (a[1] && pv > 0) si += pv / a[1];
+      else si += pstk;
     }
-    // rotación y margen se dividen por el total completo (un cliente sin indicador pesa 0);
-    // semanas de stock solo por el stock de los clientes que sí traen el indicador
-    return [v, v ? r4(rotW / v) : null, vn ? r4(mgW / vn) : null, stk,
-            wosS ? r4(wosW / wosS) : (v ? r4(stk / v) : null), r4(vn)];
+    return [v, si ? r4(v / si) : null, vn ? r4(mgW / vn) : null, stk,
+            v ? r4(si / v) : null, r4(vn)];
   }
 
   function parseLinea(wb, semana) {
