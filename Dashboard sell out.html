@@ -227,6 +227,17 @@ footer{text-align:center; color:var(--muted); font-size:11.5px; padding:14px}
   .advice-cards{grid-template-columns:1fr}
   .hstat .v{font-size:12px}
 }
+
+/* Desglose de sucursales por departamento interno */
+.store-toggle{font:inherit;font-weight:700;color:inherit;background:transparent;border:0;padding:4px 0;cursor:pointer;text-align:left;display:flex;align-items:center;gap:6px;width:100%}
+.store-toggle:focus-visible{outline:2px solid #1d4ed8;outline-offset:2px;border-radius:3px}
+.store-toggle::before{content:'▸';color:#1d4ed8;flex-shrink:0}
+.store-toggle[aria-expanded="true"]::before{content:'▾'}
+#tbl .store-row{cursor:pointer}
+#tbl .store-row.is-open,#tbl .store-row.is-open .tk1,#tbl .store-row.is-open .tk2,#tbl .store-row.is-open .tk3{background:#e8efff}
+#tbl .department-row,#tbl .department-row .tk1,#tbl .department-row .tk2,#tbl .department-row .tk3{background:#f5f8ff}
+#tbl .department-row .tk2{padding-left:24px;font-weight:600}
+.department-label{display:block;font-size:9px;font-weight:400;color:#526079}
 </style>
 </head>
 <body>
@@ -412,7 +423,7 @@ footer{text-align:center; color:var(--muted); font-size:11.5px; padding:14px}
 
   <div class="tblwrap">
     <div class="tblbar">
-      <strong style="font-size:13.5px">Detalle por modelo</strong>
+      <strong id="detailTitle" style="font-size:13.5px">Detalle por modelo</strong>
       <span class="cnt" id="tblCount"></span>
       <div class="msWrap"><button class="btn ghost msBtn" id="xlsBtn" type="button">Hojas: actual ▾</button><div class="msPanel" id="xlsPanel" style="left:auto; right:0"></div></div>
       <button class="btn" id="btnXlsx" type="button">⬇ Descargar Excel</button>
@@ -1138,6 +1149,7 @@ function render(){
   }
   if(hm){ el('hdrInfo').innerHTML = '<div class="hstat"><div class="k">Sección</div><div class="v" style="font-size:12.5px">Guía de uso</div></div>'; return; }
   if(tm){ renderTiendas(); return; }
+  el('detailTitle').textContent = 'Detalle por modelo';
   const rows = filtered();
   renderKPIs(rows); renderDur(rows); renderAdvice(rows); renderTable(rows);
   el('hdrInfo').innerHTML = `<div class="hstat"><div class="k">Hoja</div><div class="v" style="font-size:12.5px">${sheet}</div></div>`+
@@ -1147,6 +1159,28 @@ function render(){
 
 // ===== vista Tiendas: por sucursal, con filtros propios =====
 let tSortCol = 4, tSortDir = -1, tPage = 1;
+const tExpandedStores = new Set();
+const tEscape = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+function tStoreGroups(rows){
+  const stores = new Map();
+  for(const r of rows){
+    // Conserva la agrupación por sucursal de la tabla principal.
+    const key = TD_V.s[r[TD_I.s]];
+    if(!stores.has(key)) stores.set(key, {key, s:TD_V.s[r[TD_I.s]], cli:TD_V.cli[r[TD_I.cli]], rows:[]});
+    stores.get(key).rows.push(r);
+  }
+  return [...stores.values()].map(store => ({...store, vv:tAgg(store.rows)}));
+}
+function tDepartmentGroups(rows){
+  const groups = new Map();
+  const stockWeek = [...new Set(rows.map(r=>TD_V.w[r[TD_I.w]]))].sort().pop();
+  for(const r of rows){
+    const name = TD_V.d[r[TD_I.d]] || 'Sin departamento interno';
+    if(!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(r);
+  }
+  return [...groups.entries()].sort(([a],[b])=>a.localeCompare(b, 'es')).map(([name,rs])=>({name, vv:tAgg(rs, stockWeek)}));
+}
 const T_METS = ['Vta UN','Vta UN LY','Vta UN crec.','Vta Neta','Vta Neta LY','Vta Neta crec.','Contribucion','Contribucion LY','Contribucion crec.','Margen','Margen LY','Margen crec.','Semanas de Stock','Rotacion UN','Rotacion UN LY','Rotacion crec.','Stk Inicial UN','Stk Inicial UN LY','Stk Inicial UN crec.','Stk Inicial Neta','Stk Inicial Neta LY','Stk Inicial Neta crec.','Stock Actual UN'];
 const T_TYPE = ['n','n','%','$','$','%','$','$','%','mg','%','%','wos','rot','%','%','n','n','%','$','$','%','n'];
 const TSel = {w:new Set(), cli:new Set(), t:new Set(), l:new Set(), s:new Set(), d:new Set(), m:new Set(), g:new Set(), st:new Set(), du:new Set(), te:new Set()};
@@ -1250,7 +1284,7 @@ function tRows(){
   return out;
 }
 // agrega filas con las fórmulas del Excel
-function tAgg(rows){
+function tAgg(rows, stockWeek){
   const M = TD_M;
   let v=0,vly=0,vn=0,vnly=0,ctb=0,ctbly=0,si=0,sily=0,sin_=0,sinly=0;
   const sactByW = {};
@@ -1264,7 +1298,7 @@ function tAgg(rows){
     sactByW[w] = (sactByW[w]||0) + (r[M['Stock Actual UN']]||0);
   }
   const wk = Object.keys(sactByW).sort();
-  const sact = wk.length? sactByW[wk[wk.length-1]] : 0;   // stock actual: no se suma entre semanas
+  const sact = wk.length? (sactByW[stockWeek == null? wk[wk.length-1] : stockWeek] || 0) : 0;   // mismo corte de stock para tienda y departamentos
   const mg = vn? ctb/vn : null, mgly = vnly? ctbly/vnly : null;
   const rot = si? v/si : null, rotly = sily? vly/sily : null;
   const cr = (a,b)=> (a!=null && b)? a/b-1 : null;
@@ -1289,6 +1323,7 @@ function tMeta(){
   return `${per} · ${uni}${cl}`;
 }
 function renderTiendas(){
+  el('detailTitle').textContent = 'Detalle por tienda · clic para ver departamentos internos';
   const rows = tRows();
   const clientes = TSel.cli.size? [...TSel.cli] : TVALS.cli;
   // tarjetas por cliente (con venta en la selección)
@@ -1303,10 +1338,7 @@ function renderTiendas(){
   }).join('');
   el('kpis').innerHTML = cards || '<div class="kpiRet"><div class="krm" style="font-size:12.5px; color:var(--muted)">Sin datos para esta selección</div></div>';
   // tabla por sucursal
-  const porSuc = {};
-  const iS = TD_I.s;
-  for(const r of rows){ const s = TD_V.s[r[iS]]; (porSuc[s] = porSuc[s]||[]).push(r); }
-  let items = Object.entries(porSuc).map(([s, rs])=>({s, cli: TD_V.cli[rs[0][iCli]], vv: tAgg(rs)}));
+  let items = tStoreGroups(rows);
   items.sort((a,b)=>{
     let x = tSortCol===0? a.s : tSortCol===1? a.cli : a.vv[tSortCol-2];
     let y = tSortCol===0? b.s : tSortCol===1? b.cli : b.vv[tSortCol-2];
@@ -1330,9 +1362,29 @@ function renderTiendas(){
     '<tr class="hdrow"><th class="rkcol tk1" title="Ranking según el orden y los filtros actuales">#</th>'+
     heads.map((c,i)=>`<th class="${c[1]?'num':''}${tkCls(i)}" data-t="${i}">${c[0]}${tSortCol===i?(tSortDir<0?' ▼':' ▲'):''}</th>`).join('')+'</tr>';
   const desde = (tPage-1)*PERT;
-  document.querySelector('#tbl tbody').innerHTML = slice.map((it,ix)=>
-    `<tr><td class="rkcol tk1">${desde+ix+1}</td><td class="tk2" title="${it.s}"><strong>${it.s}</strong></td><td class="tk3">${retChip2(it.cli)}</td>`+
-    it.vv.map((x,i)=>`<td class="num ${tCls(T_TYPE[i], x)}">${tFmt(T_TYPE[i], x)}</td>`).join('')+'</tr>').join('');
+  const tbody = document.querySelector('#tbl tbody');
+  const metricCells = vv => vv.map((x,i)=>`<td class="num ${tCls(T_TYPE[i], x)}">${tFmt(T_TYPE[i], x)}</td>`).join('');
+  const drawStores = () => {
+    tbody.innerHTML = slice.map((it,ix)=>{
+      const expanded = tExpandedStores.has(it.key);
+      const parent = `<tr class="store-row${expanded?' is-open':''}" data-store="${ix}"><td class="rkcol tk1">${desde+ix+1}</td><td class="tk2" title="${tEscape(it.s)}"><button type="button" class="store-toggle" aria-expanded="${expanded}" aria-label="${expanded?'Ocultar':'Ver'} departamentos internos de ${tEscape(it.s)}">${tEscape(it.s)}</button></td><td class="tk3">${retChip2(it.cli)}</td>` + metricCells(it.vv) + '</tr>';
+      if(!expanded) return parent;
+      return parent + tDepartmentGroups(it.rows).map(dept =>
+        `<tr class="department-row"><td class="rkcol tk1"></td><td class="tk2" title="${tEscape(it.s)} · ${tEscape(dept.name)}"><span class="department-label">Departamento interno</span>${tEscape(dept.name)}</td><td class="tk3">${retChip2(it.cli)}</td>` + metricCells(dept.vv) + '</tr>'
+      ).join('');
+    }).join('');
+  };
+  drawStores();
+  // Reemplaza también el manejador de la vista de modelos al cambiar de vista.
+  tbody.onclick = e => {
+    const tr = e.target.closest('tr[data-store]');
+    if(!tr || !tbody.contains(tr)) return;
+    const ix = Number(tr.dataset.store), item = slice[ix];
+    if(tExpandedStores.has(item.key)) tExpandedStores.delete(item.key);
+    else tExpandedStores.add(item.key);
+    drawStores();
+    tbody.querySelector(`tr[data-store="${ix}"] .store-toggle`).focus({preventScroll:true});
+  };
   document.querySelector('#tbl thead').onclick = e=>{
     const th = e.target.closest('th'); if(!th || th.dataset.t===undefined) return;
     const i = +th.dataset.t;
