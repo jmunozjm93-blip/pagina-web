@@ -1526,7 +1526,7 @@ el('btnXlsx').onclick = async ()=>{
     rets.sort((a,b)=>((gtOf(b)[5]||0)-(gtOf(a)[5]||0)) || ((gtOf(b)[0]||0)-(gtOf(a)[0]||0)));
     if(conSucursal) rows=SucursalExport.desglosar(source,rows,FSel.suc,rets);
     const multiW = weeksSel().length > 1;
-    const fixed = ['Modelo','Codigo B','Foto'].concat(multiW? ['Semana']:[]).concat(['Descripción','Full Price','BO02 (stock comun)','KAM','Regionales','Status','Duración','Temporada','Grupo Género','Marca']).concat(conSucursal?['Mejor retailer','Nombre Sucursal']:[]);
+    const fixed = ['Modelo','Codigo B','Foto'].concat(multiW? ['Semana']:[]).concat(['Descripción','Full Price','BO02 (stock comun)','KAM','Regionales','Status','Duración','Temporada','Grupo Género','Marca']).concat(conSucursal?['Mejor retailer','Nombre Sucursal','Departamento Interno']:[]);
     const METS = ['Vta Neta','Vta UN','Rotación UN','Margen','Stock Actual UN','Semanas de Stock'];
     const wsx = wbk.addWorksheet(wsName(sname), {views:[{state:'frozen', ySplit:2, xSplit:2}]});
     const r1 = wsx.addRow(fixed.map(()=>null).concat(rets.flatMap(rt=>[rt,null,null,null,null,null])));
@@ -1547,7 +1547,7 @@ el('btnXlsx').onclick = async ()=>{
     rows.forEach(r=>{
       const dash = k => { const n = nfx(r[k]); return n==null? '–' : n; };
       const codB = String(r.m).split('-')[0];
-      const vals = [r.m, codB, null].concat(multiW? ['S'+r._w]:[]).concat([r.d, nfx(r.fp), dash('bo'), dash('kam'), dash('reg'), r.st, r.du, r.te, r.g, r.b]).concat(conSucursal?[r._exportRetailer,r.suc]:[]);
+      const vals = [r.m, codB, null].concat(multiW? ['S'+r._w]:[]).concat([r.d, nfx(r.fp), dash('bo'), dash('kam'), dash('reg'), r.st, r.du, r.te, r.g, r.b]).concat(conSucursal?[r._exportRetailer,r.suc,r.dep||'–']:[]);
       rets.forEach(rt=>{
         const a = r.r[rt];
         if(!a){ vals.push(null,null,null,null,null,null); return; }
@@ -1581,9 +1581,10 @@ el('btnXlsx').onclick = async ()=>{
       });
     });
     if(conSucursal){
-      wsx.getColumn(fixed.length-1).width=20;
-      wsx.getColumn(fixed.length).width=38;
-      wsx.getColumn(fixed.length).alignment={vertical:'middle',wrapText:true};
+      wsx.getColumn(fixed.length-2).width=20;
+      wsx.getColumn(fixed.length-1).width=38;
+      wsx.getColumn(fixed.length).width=24;
+      wsx.getColumn(fixed.length-1).alignment={vertical:'middle',wrapText:true};
     }
     const lastRow = wsx.rowCount;
     rets.forEach((rt,i)=>{
@@ -1601,7 +1602,7 @@ el('btnXlsx').onclick = async ()=>{
       const cell = wsx.getRow(rr).getCell(fixed.length + rets.length*6);
       cell.border = Object.assign({}, cell.border, {right:med});
     }
-    wsx.columns.forEach((c,i)=>{ c.width = conSucursal && i===fixed.length-1?38:conSucursal && i===fixed.length-2?20:i===0?15:i===1?13:i===2?30:i<8?13:12; });
+    wsx.columns.forEach((c,i)=>{ c.width = conSucursal && i===fixed.length-1?24:conSucursal && i===fixed.length-2?38:conSucursal && i===fixed.length-3?20:i===0?15:i===1?13:i===2?30:i<8?13:12; });
   };
 
   if(line===TLINE){
