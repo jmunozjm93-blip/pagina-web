@@ -42,7 +42,10 @@
   .bar { height:4px; background:#2c3340; border-radius:2px; overflow:hidden; margin-top:10px; }
   .bar i { display:block; height:100%; width:30%; background:var(--accent); animation:slide 1.2s infinite; }
   @keyframes slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(400%)} }
-  .estado { display:grid; grid-template-columns:auto repeat(6,1fr); gap:4px 10px; font-size:.86rem; align-items:center; }
+  #estado { overflow-x:auto; }
+  .estado { display:grid; grid-template-columns:auto repeat(7,1fr); min-width:760px; gap:4px 10px; font-size:.86rem; align-items:center; }
+  #resSemana { background:#0b0d11; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+  #resFile { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; }
   .estado .h { color:var(--muted); }
   .estado .ok { color:var(--ok); } .estado .no { color:#4b5563; }
   .small { font-size:.82rem; color:var(--muted); }
@@ -89,6 +92,18 @@
     <div class="names" id="names"></div>
     <div id="cards"></div>
   </div>
+  <div class="box" id="reservas">
+    <h2>4 · Reservas</h2>
+    <p class="small">Carga el Excel consolidado con las hojas BO02, KAM y REGIONALES. Cada hoja debe contener Modelo y Available.</p>
+    <div class="row">
+      <label for="resSemana">Semana</label>
+      <select id="resSemana" aria-label="Semana de Reservas"><option value="">Cargando semanas…</option></select>
+      <label for="resFile" class="btnfile">Elegir Excel de reservas…</label>
+      <input id="resFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" aria-label="Excel de reservas">
+    </div>
+    <p class="small">Reemplaza BO02, KAM y REGIONALES por Modelo para la semana elegida. Un modelo ausente queda en cero. Las demás columnas se conservan.</p>
+    <div id="resCards" aria-live="polite"></div>
+  </div>
 </main>
 
 <script src="js/convertir.js?v=sucursal-42"></script>
@@ -99,8 +114,8 @@ const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
 const el = id => document.getElementById(id);
 const fmt = n => n == null ? '–' : Number(n).toLocaleString('es-CL');
 const money = n => n == null ? '–' : '$' + Math.round(n).toLocaleString('es-CL');
-const ETIQ = { calzado: 'Calzado', ropa: 'Ropa', acc: 'Accesorios', tiendas: 'Tiendas', topsuc: 'Top-5 sucursales', steve: 'Steve Madden' };
-const ORDEN = ['calzado', 'ropa', 'acc', 'tiendas', 'topsuc', 'steve'];
+const ETIQ = { calzado: 'Calzado', ropa: 'Ropa', acc: 'Accesorios', tiendas: 'Tiendas', topsuc: 'Top-5 sucursales', steve: 'Steve Madden', reservas: 'Reservas' };
+const ORDEN = ['calzado', 'ropa', 'acc', 'tiendas', 'topsuc', 'steve', 'reservas'];
 el('repoName').textContent = `${OWNER}/${REPO}`;
 el('names').innerHTML = Convertir.TIPOS.map(t => `<div>${ETIQ[t.tipo]}: <code>${t.etiqueta}</code></div>`).join('');
 
@@ -184,6 +199,11 @@ async function cargarEstado() {
     if (token()) m = await leerManifiesto();
     else { const r = await fetch('data/semanas.json?t=' + Date.now()); m = r.ok ? await r.json() : { semanas: {} }; }
     const wks = Object.keys(m.semanas || {}).sort((a, b) => a - b);
+    const seleccion = el('resSemana').value;
+    const reservaWeeks = wks.filter(w => ['calzado','ropa','acc'].some(t => m.semanas[w][t]));
+    el('resSemana').replaceChildren(...reservaWeeks.map(w => new Option('S' + w, w)));
+    if (reservaWeeks.length) el('resSemana').value = reservaWeeks.includes(seleccion) ? seleccion : reservaWeeks[reservaWeeks.length - 1];
+    else el('resSemana').add(new Option('Primero carga una semana de sell out', ''));
     if (!wks.length) { el('estado').textContent = 'Todavía no hay semanas cargadas en GitHub (los dashboards traen embebidas las semanas 27 a 36 y 27 a 37 en Steve Madden).'; return; }
     el('estado').innerHTML = `<div class="estado"><div class="h">Semana</div>${ORDEN.map(t => `<div class="h">${ETIQ[t]}</div>`).join('')}` +
       wks.map(w => `<div><b>S${w}</b></div>` + ORDEN.map(t => m.semanas[w][t] ? `<div class="ok" title="${m.semanas[w][t]}">✓</div>` : `<div class="no">—</div>`).join('')).join('') + '</div>';
@@ -218,6 +238,7 @@ function tablaResumen(r) {
 }
 
 function procesar(file) {
+  if (/^reservas.*\.xlsx$/i.test(file.name)) { procesarReservas(file); return; }
   const info = Convertir.identificar(file.name);
   const c = tarjeta(file, info);
   if (!info) { setSt(c, 'bad', 'El nombre no corresponde a ninguno de los 5 reportes. Debe ser exactamente uno de los nombres de la lista, con el número de semana (ej. w38).'); return; }
@@ -302,5 +323,6 @@ drop.addEventListener('drop', async e => {
   xlsx.forEach(procesar);
 });
 </script>
+<script src="js/cargar-reservas.js?v=1"></script>
 </body>
 </html>
