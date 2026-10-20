@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "fuente": "detalle reservas.xlsx",
+  "grupos": {
+    "BO02": [
+      "BO02"
+    ],
+    "KAM": [
+      "C_BELSPO",
+      "C_FALAB",
+      "C_HIT",
+      "C_HITES",
+      "C_INTSPO",
+      "C_LAPOLA",
+      "C_MAGMA",
+      "C_MLIBRE",
+      "C_GE2",
+      "C_PARIS",
+      "C_RIPLEY",
+      "C_DEPORT",
+      "C_FALLAD",
+      "C_ECOM",
+      "C_ECOMCV",
+      "C_RETAIL",
+      "C_RMARCA",
+      "T_NC",
+      "C_TRICOT",
+      "C_WALLRI",
+      "C_SNOBBY",
+      "C_SPARTA",
+      "9000",
+      "RECEP"
+    ],
+    "REGIONALES": [
+      "C_ALICIA",
+      "C_ALMAND",
+      "C_CANNY",
+      "C_CHELEC",
+      "C_DEPORT",
+      "C_DIMARS",
+      "C_DOLLY",
+      "C_GERMAN",
+      "C_JAVER",
+      "C_KOBUS",
+      "C_LAPARV",
+      "C_MGUTIE",
+      "C_MUNDOJ",
+      "C_OKSPOR",
+      "C_PAULA",
+      "C_REGION",
+      "C_SCARLA",
+      "C_TEBES",
+      "C_TODODE",
+      "C_UGALDE",
+      "C_VISION"
+    ]
+  }
+}

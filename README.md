@@ -54,6 +54,36 @@ Detalle completo en [`RESUMEN PROYECTO.md`](RESUMEN%20PROYECTO.md).
 
 Las semanas 27–36 siguen embebidas en el HTML; la 37 en adelante se descargan solo cuando el usuario las selecciona (la última publicada se carga al abrir).
 
+### Reservas
+
+**Generar desde el stock:** abrir `armar-reservas.html` y adjuntar el Excel
+original con Código de almacén, Modelo y Available. El navegador aplica los códigos
+de `data/reglas-reservas.json` y suma Available por Modelo para las tres hojas.
+Opcionalmente se puede adjuntar otro `detalle reservas.xlsx` (KAMS, BO02 y Regiones).
+Los códigos del detalle adjunto solo se usan en esa sesión; no reemplazan los publicados.
+La página muestra los totales, almacenes excluidos, códigos sin registros y unidades
+sin Modelo. Descarga `Reservas_consolidado.xlsx` para cargarlo al sell out; también
+permite descargar cada hoja por separado. El stock se procesa en un Web Worker y
+no se envía a GitHub ni al servidor. C_DEPORT aparece en KAM y REGIONALES por
+definición del detalle, por lo que las hojas no deben sumarse como un total único.
+
+En `cargar.html`, la sección **Reservas** permite elegir una semana publicada y cargar
+`Reservas_consolidado.xlsx`, con las hojas **BO02**, **KAM** y **REGIONALES**.
+Cada hoja contiene únicamente **Modelo** y **Available**. La vista previa informa
+los modelos, unidades y filas omitidas por falta de Modelo antes de actualizar.
+
+La carga reemplaza `data/wNN/reservas.json` y registra `reservas` en el índice semanal.
+El dashboard cruza por Modelo y reemplaza exclusivamente `bo`, `kam` y `reg`,
+incluida la exportación a Excel. Los modelos ausentes reciben cero en esas columnas.
+Las semanas sin una carga de Reservas conservan sus valores originales.
+Los archivos semanales de ventas, el catálogo y el resto de las columnas no se modifican.
+
+Validaciones: tres hojas completas, encabezados correctos, cantidades numéricas
+y modelos únicos por hoja. Se admiten ceros y negativos. Las filas sin Modelo se
+advierten y se omiten. Para corregirlas, completar el Modelo en el origen y volver a cargar.
+
+Pruebas de regresión: `node --test tests/reservas.test.cjs`.
+
 | Archivo | Descripción |
 |---|---|
 | `cargar.html` | App de carga: valida, convierte y sube |

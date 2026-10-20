@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Armar reservas · Sell Out</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--text:#e8eaee;--muted:#a5adb8;--line:#303743;--accent:#ea580c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:28px 16px 60px}
+main{max-width:1000px;margin:auto}h1{font-size:25px;margin:0 0 6px}h2{font-size:16px;margin:0 0 12px;color:var(--muted)}p{margin:8px 0 16px}
+a{color:#ffb480}.lead,.small{color:var(--muted)}.small{font-size:13px}.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:18px}
+.drop{border:2px dashed #465165;border-radius:12px;padding:28px 16px;text-align:center}.drop.over{border-color:var(--accent);background:#251c18}
+button,.button{display:inline-block;border:0;border-radius:8px;padding:11px 16px;background:var(--accent);color:white;font:600 14px system-ui;cursor:pointer;text-decoration:none}
+button:disabled{opacity:.45;cursor:default}.sec{background:#252c37;color:var(--text);border:1px solid #465165}
+input[type=file]{max-width:100%;font:14px system-ui}#stock{position:absolute;width:1px;height:1px;opacity:0}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.status{margin-top:12px;white-space:pre-wrap}.bad{color:#ff8e8e}.warn{color:#ffc35c}.ok{color:#57d895}
+.table{overflow:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--muted);font-weight:500}.n{text-align:right;font-variant-numeric:tabular-nums}
+details{margin:14px 0}summary{cursor:pointer;color:#c3cbd5}ul{padding-left:22px}.rule{display:grid;grid-template-columns:130px 1fr;gap:12px;margin:10px 0}.codes{color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+:focus-visible{outline:2px solid #ffb480;outline-offset:4px}[hidden]{display:none!important}
+@media(max-width:600px){.box{padding:16px}.rule{grid-template-columns:1fr;gap:3px}th,td{padding:8px 5px}}
+</style>
+</head>
+<body>
+<script src="js/acceso.js"></script>
+<main>
+  <h1>Armar reservas</h1>
+  <p class="lead">Adjunta el stock del día. Se filtran los almacenes del detalle y se suma Available por Modelo para generar las tres hojas de reservas.</p>
+  <section class="box">
+    <h2>1 · Stock del día</h2>
+    <div class="drop" id="drop">
+      <p>Arrastra aquí <b>Stock Solo CD y Reservas.xlsx</b></p>
+      <label for="stock" class="button">Elegir archivo de stock…</label>
+      <input id="stock" type="file" accept=".xlsx" aria-label="Archivo de stock">
+      <p id="stockName" class="small">El nombre puede variar. Debe incluir Código de almacén, Modelo y Available.</p>
+    </div>
+    <p class="small">Los archivos se procesan en tu navegador. Generar el Excel no modifica los datos del sell out.</p>
+  </section>
+  <section class="box">
+    <h2>2 · Filtros de almacén</h2>
+    <div id="rulesStatus" class="status" role="status">Cargando las reglas guardadas…</div>
+    <details>
+      <summary>Ver los almacenes de cada hoja</summary>
+      <div id="rules"></div>
+    </details>
+    <details>
+      <summary>Usar otro detalle de reservas</summary>
+      <p class="small">Opcional: adjunta el Excel con las hojas KAMS, BO02 y Regiones. La primera columna contiene los códigos de almacén.</p>
+      <label for="detail">Detalle de reservas</label>
+      <input id="detail" type="file" accept=".xlsx">
+      <button id="resetRules" class="sec" type="button" hidden>Usar reglas guardadas</button>
+    </details>
+    <p id="shared" class="small"></p>
+  </section>
+  <section class="box">
+    <h2>3 · Revisión y Excel</h2>
+    <div id="status" class="status" role="status" aria-live="polite">Adjunta el stock para generar la revisión automáticamente.</div>
+    <div id="review" hidden>
+      <p id="source" class="small"></p>
+      <div class="table"><table>
+        <thead><tr><th>Hoja</th><th class="n">Modelos</th><th class="n">Available</th><th class="n">Sin Modelo</th></tr></thead>
+        <tbody id="summary"></tbody>
+      </table></div>
+      <div id="warnings" class="warn"></div>
+      <details><summary>Almacenes sin registros y excluidos</summary><div id="diagnostics" class="small"></div></details>
+      <div class="row">
+        <button id="download" type="button">Descargar Excel de reservas</button>
+        <a class="button sec" href="cargar.html#reservas" id="upload">Ir a subir al sell out</a>
+      </div>
+      <p class="small">Descarga el consolidado y selecciónalo en Reservas de la página de carga. Allí eliges la semana y actualizas solo BO02, KAM y REGIONALES.</p>
+      <details><summary>Descargar cada hoja por separado</summary>
+        <div id="separate" class="row" style="margin-top:12px"></div>
+      </details>
+      <p id="downloadStatus" class="small" role="status"></p>
+    </div>
+  </section>
+</main>
+<script src="js/armar-reservas-ui.js?v=1"></script>
+</body>
+</html>
