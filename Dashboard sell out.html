@@ -255,6 +255,23 @@ footer{text-align:center; color:var(--muted); font-size:11.5px; padding:14px}
  .filters .filter-priority .filter-search{flex-basis:100%}
  .filters .filter-details .filter-group-start{border-left:0;padding-left:0}
 }
+
+/* Contraste de filtros: contornos definidos y separadores visibles. */
+.filters{border-color:#a1aec2;background:#f8fafc;box-shadow:0 3px 12px rgba(20,34,74,.12)}
+.filters .fg>label{color:#34435c;margin-bottom:5px}
+.filters .fg>input,.filters .fg>select,.filters .fg>div>input[type=number],.filters .msBtn{border:1px solid #7b8ba5;color:#172640;background:#fff;box-shadow:0 1px 2px rgba(20,34,74,.07)}
+.filters .msBtn{background:#e8eef7}
+.filters input::placeholder{color:#5f6e84;opacity:1}
+.filters .msBtn:hover,.filters #btnClear:hover,.filters #tClear:hover{background:#d9e5f6;border-color:#45648e}
+.filters input:focus-visible,.filters button:focus-visible{outline:2px solid #1a56db;outline-offset:2px}
+.filters .msWrap:has(input:not([data-all]):checked)>.msBtn{background:#dce9ff;border-color:#3564a3;color:#123f7e}
+.filters .msPanel{border-color:#7b8ba5;box-shadow:0 6px 20px rgba(20,34,74,.22)}
+.filters .msPanel label{color:#34435c}
+.filters .msPanel label:hover{background:#e8eef7}
+.filters .filter-details{border-top:2px solid #a1aec2;padding-top:16px}
+.filters .filter-details .filter-group-start{border-left:2px solid #a1aec2}
+.filters #btnClear,.filters #tClear{border:1px solid #7b8ba5;background:#e8eef7;color:#172640}
+@media(max-width:760px){.filters .filter-details .filter-group-start{border-left:0}}
 </style>
 </head>
 <body>
