@@ -40,8 +40,8 @@
 
   // hoja -> arreglo de filas (arreglo de valores crudos), sin depender de modo denso o disperso
   function filasDe(ws) {
-    if (ws['!data']) {
-      return ws['!data'].map(row => row ? row.map(c => (c ? c.v : null)) : []);
+    if (Array.isArray(ws) || ws['!data']) {
+      return (ws['!data'] || ws).map(row => row ? row.map(c => (c ? c.v : null)) : []);
     }
     return XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
   }
@@ -49,7 +49,7 @@
 
   // ---------- líneas de producto: calzado / ropa / acc ----------
   const ATTR = { 'modelo': 'm', 'descripcion': 'd', 'preciopubblanco_3': 'fp', 'status': 'st', 'duracion': 'du',
-                 'temporada': 'te', 'grupogenero': 'g', 'departamentointerno': 'dep', 'marca': 'b' };
+                 'temporada': 'te', 'grupogenero': 'g', 'departamentointerno': 'dep', 'marca': 'b', 'nombresucursal': 'suc' };
   // posición dentro del arreglo de 6: [vtaUN, rotación, margen, stockActual, semanasStock, vtaNeta]
   const MET = { 'vtaun': 0, 'rotacionun': 1, 'margen': 2, 'stockactualun': 3, 'stkfinalun': 3, 'semanasdestock': 4, 'vtaneta': 5 };
   const HOJAS_RE = [/^w\s*x?\d*\(tienda\+\.com\)$/, /^tiendaw\s*x?\d*$/, /^w\s*x?\d*\.com$/,
@@ -69,12 +69,12 @@
 
   function parseHojaLinea(ws, nombre) {
     const rows = filasDe(ws);
-    const h = rows.findIndex(r => r && norm(r[0]) === 'modelo');
-    if (h < 0) throw new Error(`Hoja "${nombre}": no encontré la fila de encabezados (columna A = "Modelo")`);
+    const h = rows.findIndex(r => r && r.some(v => norm(v) === 'modelo') && r.some(v => norm(v) === 'vtaun'));
+    if (h < 0) throw new Error(`Hoja "${nombre}": no encontré los encabezados Modelo y Vta UN`);
     const hdr = rows[h], retRow = rows[h - 1] || [];
     // columnas de atributos
     const attrCols = [];
-    let c = 0;
+    let c = hdr.findIndex(v => !vacio(v));
     for (; c < hdr.length; c++) {
       const k = ATTR[norm(hdr[c])];
       if (!k) break;
@@ -107,11 +107,13 @@
       return any ? a : null;
     };
     const out = [];
-    let gt = null, prevAttrs = null;
+    let gt = null, prevAttrs = null, sucActual = '';
+    const modelCol = attrCols.find(a => a[1] === 'm')[0];
+    const sucCol = attrCols.find(a => a[1] === 'suc');
     for (let i = h + 1; i < rows.length; i++) {
       const row = rows[i]; if (!row) continue;
-      const m = txt(row[0]);
-      if (norm(m) === 'totalgeneral') {
+      const m = txt(row[modelCol]);
+      if (attrCols.some(([col]) => norm(row[col]) === 'totalgeneral')) {
         gt = {};
         // en el total solo entran los clientes con algún valor distinto de cero
         for (const b of blocks) { const a = leer(row, b); if (a && a.some(x => x)) gt[b.ret] = a; }
@@ -119,6 +121,7 @@
         break;
       }
       if (row.every(vacio)) continue;
+      if(sucCol && !vacio(row[sucCol[0]])) { sucActual=txt(row[sucCol[0]]); prevAttrs=null; }
       const o = {};
       if (m) {
         for (const [col, k] of attrCols) {
@@ -136,6 +139,7 @@
         const depCol = attrCols.find(a => a[1] === 'dep');
         if (depCol && !vacio(row[depCol[0]])) o.dep = txt(row[depCol[0]]);
       }
+      if(sucCol) o.suc=sucActual;
       o.r = {};
       for (const b of blocks) { const a = leer(row, b); if (a) o.r[b.ret] = a; }
       out.push(o);
@@ -257,18 +261,23 @@
   }
   function parseTopSuc(wb, semana) {
     const sn = wb.SheetNames[0];
-    const rows = filasDe(wb.Sheets[sn]);
-    const h = rows.findIndex(r => r && norm(r[0]) === 'nombrecliente');
-    if (h < 0) throw new Error('No encontré la fila de encabezados (columna A = "Nombre Cliente")');
-    const hdr = rows[h].map(norm);
+    const rows = wb.filasGrandes || filasDe(wb.Sheets[sn]);
+    const iterator=rows[Symbol.iterator](); let header;
+    // No usar for-of al buscar: cerraría el generador al encontrar la cabecera.
+    for(let step=iterator.next(); !step.done; step=iterator.next()) {
+      const r=step.value;
+      if(r && r.some(v=>norm(v)==='nombrecliente') && r.some(v=>norm(v)==='modelo')) {header=r;break;}
+    }
+    if(!header) throw new Error('No encontré los encabezados Nombre Cliente y Modelo');
+    const hdr = header.map(norm);
     const col = n => { const c = hdr.indexOf(norm(n)); if (c < 0) throw new Error(`Falta la columna "${n}"`); return c; };
     const cCli = col('Nombre Cliente'), cSuc = col('Nro Sucursal Nombre'), cSem = col('Nro Semana'), cMod = col('Modelo'),
           cUN = col('Vta UN'), cNeta = col('Vta Neta');
     const nestCols = [cCli, cSuc, cSem];
     const W = {}, ACC = {}, weeks = new Set();
     let prev = null;
-    for (let i = h + 1; i < rows.length; i++) {
-      const row = rows[i]; if (!row) continue;
+    for (const row of iterator) {
+      if (!row) continue;
       if (norm(row[0]) === 'totalgeneral') break;
       const d = rellenar(row, nestCols, prev); prev = d;
       const key = CLI_KEY[d[0].toUpperCase()];
@@ -472,5 +481,19 @@
     return o;
   }
 
-  global.Convertir = { TIPOS, identificar, convertir, opcionesLectura, nombresHojas, validarLinea, totalPonderado, rellenar, semanaDelLibro, resumen };
+  function agruparSucursales(rows) {
+    const groups = new Map();
+    for(const row of rows) {
+      const key=JSON.stringify([row._w,row.m,row.dep,row.b,row.g,row.st,row.du,row.te]);
+      let g=groups.get(key);
+      if(!g) { g={ref:row,ret:{}}; groups.set(key,g); }
+      for(const [ret,a] of Object.entries(row.r)) (g.ret[ret] ||= []).push(a);
+    }
+    return [...groups.values()].map(g=>{
+      const r={...g.ref,r:{}};delete r.suc;
+      for(const [ret,values] of Object.entries(g.ret)) r.r[ret]=values.length===1?values[0]:totalPonderado(Object.fromEntries(values.map((a,i)=>[i,a])));
+      return r;
+    });
+  }
+  global.Convertir = { TIPOS, identificar, convertir, opcionesLectura, nombresHojas, validarLinea, totalPonderado, rellenar, semanaDelLibro, resumen, agruparSucursales };
 })(typeof window !== 'undefined' ? window : globalThis);

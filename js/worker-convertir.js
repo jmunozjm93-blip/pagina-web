@@ -1,12 +1,12 @@
 /* Web Worker: lee el Excel y lo convierte sin congelar la pantalla */
-importScripts('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'convertir.js');
+importScripts('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'fflate.js', 'excel-grande.js', 'convertir.js?v=sucursal-42');
 
 self.onmessage = function (e) {
   const { id, tipo, semana, buffer } = e.data;
   const t0 = Date.now();
   try {
     self.postMessage({ id, etapa: 'leyendo' });
-    const wb = XLSX.read(buffer, Convertir.opcionesLectura(tipo));
+    const wb = tipo==='topsuc' ? ExcelGrande.leer(buffer) : XLSX.read(buffer, Convertir.opcionesLectura(tipo));
     const tLectura = Date.now() - t0;
     self.postMessage({ id, etapa: 'convirtiendo', hojas: wb.SheetNames });
     const json = Convertir.convertir(tipo, wb, semana);

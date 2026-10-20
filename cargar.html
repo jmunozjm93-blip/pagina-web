@@ -91,7 +91,8 @@
   </div>
 </main>
 
-<script src="js/convertir.js"></script>
+<script src="js/convertir.js?v=sucursal-42"></script>
+<script src="js/github-errores.js?v=1"></script>
 <script>
 const OWNER = 'jmunozjm93-blip', REPO = 'pagina-web', BRANCH = 'main';
 const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
@@ -106,12 +107,12 @@ el('names').innerHTML = Convertir.TIPOS.map(t => `<div>${ETIQ[t.tipo]}: <code>${
 // ---------- GitHub ----------
 const token = () => localStorage.getItem('gh_token') || '';
 el('token').value = token();
-async function gh(path, opts = {}) {
+async function gh(path, opts = {}, credencial = token()) {
   // cache: no-store → GitHub manda max-age=60 y el navegador devolvía listas viejas (sha desactualizado)
-  const r = await fetch(API + path, Object.assign({ cache: 'no-store', headers: { Authorization: 'Bearer ' + token(), Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }, opts));
+  const r = await fetch(API + path, Object.assign({ cache: 'no-store', headers: { Authorization: 'Bearer ' + credencial, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }, opts));
   if (r.status === 404) return null;
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(`GitHub ${r.status}: ${j.message || r.statusText}`);
+  if (!r.ok) throw new Error(GitHubErrores.mensaje(r,j));
   return j;
 }
 const b64 = s => { const bytes = new TextEncoder().encode(s); let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin); };
@@ -155,34 +156,25 @@ async function registrar(semana, tipo) {
   return m;
 }
 
-// Aviso: el repositorio es público, así que leerlo funciona aunque el token no sirva
-// para escribir. Para saber si puede escribir se manda un PUT con el cuerpo vacío:
-// sin permiso GitHub responde 403 antes de mirar el cuerpo; con permiso responde 422
-// (datos inválidos) y no se escribe nada.
-const AYUDA_403 = 'El token no tiene permiso para escribir en el repositorio.\n' +
-  'Entra a github.com/settings/tokens?type=beta, abre el token y revisa que tenga:\n' +
-  '· Repository access: Only select repositories → pagina-web\n' +
-  '· Permissions → Repository permissions → Contents: Read and write\n' +
-  'Si lo cambias o creas uno nuevo, pégalo aquí y pulsa "Guardar y probar".';
-async function puedeEscribir() {
-  const r = await fetch(`${API}/contents/.permiso`, {
-    method: 'PUT', cache: 'no-store',
-    headers: { Authorization: 'Bearer ' + token(), Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
-    body: '{}'
-  });
-  return r.status !== 403;
-}
-
+// Leer un repositorio público no demuestra permiso de escritura.
+// Se verifica la conexión antes de reemplazar el token guardado; el PUT real
+// informa cualquier restricción de escritura sin hacer escrituras de prueba.
 el('btnToken').onclick = async () => {
-  localStorage.setItem('gh_token', el('token').value.trim());
-  el('tokenSt').className = 'st'; el('tokenSt').textContent = 'Probando…';
+  const candidato=el('token').value.trim(), boton=el('btnToken');
+  el('tokenSt').className='st';
+  if(!candidato){el('tokenSt').className='st bad';el('tokenSt').textContent='Escribe un token. Se conserva el que ya estaba guardado.';return;}
+  boton.disabled=true;el('tokenSt').textContent='Comprobando conexión…';
   try {
-    const r = await gh('');
-    if (!r) throw new Error('No encuentro el repositorio ' + OWNER + '/' + REPO);
-    if (!(await puedeEscribir())) throw new Error(AYUDA_403);
-    el('tokenSt').className = 'st ok'; el('tokenSt').textContent = `✓ Conectado a ${r.full_name} con permiso de escritura`;
+    const r=await gh('',{},candidato);
+    if(!r)throw new Error('No encuentro el repositorio o este token no tiene acceso.');
+    localStorage.setItem('gh_token',candidato);
+    el('tokenSt').className='st ok';
+    el('tokenSt').textContent='✓ Token guardado y conexión comprobada. GitHub verificará el permiso de escritura al subir el archivo.';
     cargarEstado();
-  } catch (e) { el('tokenSt').className = 'st bad'; el('tokenSt').textContent = '✗ ' + e.message; }
+  } catch(e) {
+    el('tokenSt').className='st bad';
+    el('tokenSt').textContent='✗ '+e.message+' No se reemplazó el token guardado.';
+  } finally {boton.disabled=false;}
 };
 
 // ---------- estado de semanas ----------
@@ -200,7 +192,7 @@ async function cargarEstado() {
 cargarEstado();
 
 // ---------- archivos ----------
-const worker = new Worker('js/worker-convertir.js');
+const worker = new Worker('js/worker-convertir.js?v=sucursal-42');
 const pend = {};
 worker.onmessage = e => { const h = pend[e.data.id]; if (h) h(e.data); };
 let seq = 0;
@@ -221,7 +213,7 @@ function tablaResumen(r) {
     <tr><td>${fmt(r.filas)} <span class="small">(de ${fmt(r.filasLeidas)} leídas)</span></td><td class="n">${fmt(r.sucursales)}</td><td class="n">${fmt(r.clientes)}</td><td class="n">${fmt(r.vtaUN)}</td><td class="n">${money(r.vtaNeta)}</td></tr></table>`;
   if (r.tipo === 'topsuc') return `<table><tr><th class="n">Modelos con venta en la semana</th><th class="n">Modelos en acumulado</th><th>Semanas del acumulado</th></tr>
     <tr><td class="n">${fmt(r.modelos)}</td><td class="n">${fmt(r.modelosAcc)}</td><td>S${r.accWeeks.join(' · S')}</td></tr></table>`;
-  return `<table><tr><th>Hoja</th><th class="n">Modelos</th><th class="n">Clientes</th><th class="n">Vta UN</th><th class="n">Vta Neta</th><th class="n">Stock</th></tr>` +
+  return `<table><tr><th>Hoja</th><th class="n">Filas</th><th class="n">Clientes</th><th class="n">Vta UN</th><th class="n">Vta Neta</th><th class="n">Stock</th></tr>` +
     r.hojas.map(h => `<tr><td>${h.hoja}</td><td class="n">${fmt(h.filas)}</td><td class="n">${h.clientes}</td><td class="n">${fmt(h.vtaUN)}</td><td class="n">${money(h.vtaNeta)}</td><td class="n">${fmt(h.stock)}</td></tr>`).join('') + '</table>';
 }
 
