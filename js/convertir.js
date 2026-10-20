@@ -61,9 +61,7 @@
     const errs = [];
     const names = wb.SheetNames;
     if (names.length !== 6) errs.push(`Se esperaban 6 hojas y el archivo tiene ${names.length}: ${names.join(', ')}`);
-    names.slice(0, 6).forEach((n, i) => {
-      if (HOJAS_RE[i] && !HOJAS_RE[i].test(norm(n))) errs.push(`Hoja ${i + 1} debería ser "${nombresHojas('NN')[i]}" y es "${n}"`);
-    });
+    HOJAS_RE.forEach((re,i)=>{ if(names.filter(n=>re.test(norm(n))).length!==1) errs.push(`Falta una hoja única para ${nombresHojas('NN')[i]}`); });
     return errs;
   }
 
@@ -103,7 +101,7 @@
     const leer = (row, b) => {
       const a = [null, null, null, null, null, null];
       let any = false;
-      for (const [col, mi] of b.cols) { const v = row[col]; if (!vacio(v)) { any = true; a[mi] = r4(num(v)); } }
+      for (const [col, mi] of b.cols) { const v = row[col]; if (!vacio(v)) { any = true; a[mi] = num(v); } }
       return any ? a : null;
     };
     const out = [];
@@ -117,7 +115,13 @@
         gt = {};
         // en el total solo entran los clientes con algún valor distinto de cero
         for (const b of blocks) { const a = leer(row, b); if (a && a.some(x => x)) gt[b.ret] = a; }
-        gt._TOTAL = totalPonderado(gt);
+        // Conservar el total que Excel guardó; nunca reconstruir porcentajes.
+        const totalCols=[];
+        for(let col=0;col<Math.max(hdr.length,retRow.length);col++){
+          const label=norm(retRow[col]||hdr[col]);
+          if(label.startsWith('total') && MET[label.slice(5)]!==undefined) totalCols.push([col,MET[label.slice(5)]]);
+        }
+        gt._TOTAL = totalCols.length?leer(row,{cols:totalCols}):[null,null,null,null,null,null];
         break;
       }
       if (row.every(vacio)) continue;
@@ -176,7 +180,7 @@
     if (errs.length) throw new Error(errs.join('\n'));
     const names = nombresHojas(semana);
     const out = {};
-    wb.SheetNames.slice(0, 6).forEach((sn, i) => { out[names[i]] = parseHojaLinea(wb.Sheets[sn], sn); });
+    HOJAS_RE.forEach((re,i)=>{const sn=wb.SheetNames.find(n=>re.test(norm(n)));out[names[i]]=parseHojaLinea(wb.Sheets[sn],sn);});
     rellenarAtributos(out);
     return out;
   }

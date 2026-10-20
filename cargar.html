@@ -91,7 +91,7 @@
   </div>
 </main>
 
-<script src="js/convertir.js?v=sucursal-42"></script>
+<script src="js/convertir.js?v=excel-directo-42"></script>
 <script src="js/github-errores.js?v=1"></script>
 <script>
 const OWNER = 'jmunozjm93-blip', REPO = 'pagina-web', BRANCH = 'main';
@@ -192,7 +192,7 @@ async function cargarEstado() {
 cargarEstado();
 
 // ---------- archivos ----------
-const worker = new Worker('js/worker-convertir.js?v=sucursal-42');
+const worker = new Worker('js/worker-convertir.js?v=excel-directo-42');
 const pend = {};
 worker.onmessage = e => { const h = pend[e.data.id]; if (h) h(e.data); };
 let seq = 0;
