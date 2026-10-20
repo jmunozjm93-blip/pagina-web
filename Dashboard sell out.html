@@ -238,6 +238,23 @@ footer{text-align:center; color:var(--muted); font-size:11.5px; padding:14px}
 #tbl .department-row,#tbl .department-row .tk1,#tbl .department-row .tk2,#tbl .department-row .tk3{background:#f5f8ff}
 #tbl .department-row .tk2{padding-left:24px;font-weight:600}
 .department-label{display:block;font-size:9px;font-weight:400;color:#526079}
+
+/* Buscador e indicadores primero; campos relacionados en la segunda fila. */
+.filters{flex-direction:column;align-items:stretch;gap:0}
+.filter-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;width:100%;min-width:0}
+.filter-priority{padding-bottom:14px}
+.filter-details{border-top:1px solid var(--line);padding-top:14px}
+.filters .filter-row .fg{flex:1 1 110px;min-width:0}
+.filters .filter-priority .fg{flex:1 1 160px}
+.filters .filter-priority .filter-search{flex:2 1 280px}
+.filters .filter-row input,.filters .filter-row .msBtn{width:100%;min-width:0!important;box-sizing:border-box}
+.filters .filter-row input[type=number]{width:50%!important}
+.filters .filter-details .filter-group-start{border-left:1px solid var(--line);padding-left:12px}
+@media(max-width:760px){
+ .filters .filter-row .fg{flex:1 1 calc(50% - 10px)}
+ .filters .filter-priority .filter-search{flex-basis:100%}
+ .filters .filter-details .filter-group-start{border-left:0;padding-left:0}
+}
 </style>
 </head>
 <body>
@@ -295,39 +312,47 @@ footer{text-align:center; color:var(--muted); font-size:11.5px; padding:14px}
 
 <div class="wrap">
   <div class="filters">
-    <div class="fg"><label>Semana</label><div class="msWrap" id="wWrap"><button class="btn ghost msBtn" type="button">S29 ▾</button><div class="msPanel" id="wPanel"></div></div></div>
-    <div class="fg"><label>Buscar</label><input type="text" id="fSearch" placeholder="Modelo o descripción… (varios SKU: separa con coma)" style="min-width:260px"></div>
-    <div class="fg"><label>Marca</label><div class="msWrap" data-f="b"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Género</label><div class="msWrap" data-f="g"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Status</label><div class="msWrap" data-f="st"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Duración</label><div class="msWrap" data-f="du"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Temporada</label><div class="msWrap" data-f="te"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Cliente</label><div class="msWrap" data-f="ret"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg" id="fgDepto"><label>Departamento Interno</label><div class="msWrap" data-f="dep"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg" id="fgTienda"><label>Nombre Sucursal</label><div class="msWrap" data-f="suc"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Rotación % (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="rotMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="rotMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
-    <div class="fg"><label>Margen % (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="mgMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="mgMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
-    <div class="fg"><label>Semanas de stock (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="wsMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="wsMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
-    <div class="fg" style="justify-content:flex-end"><label>&nbsp;</label><button class="btn ghost" id="btnClear">Limpiar filtros</button></div>
+    <div class="filter-row filter-priority">
+    <div class="fg filter-search"><label>Buscar</label><input type="text" id="fSearch" placeholder="Modelo o descripción… (varios SKU: separa con coma)" style="min-width:260px"></div>
+    <div class="fg "><label>Rotación % (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="rotMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="rotMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
+    <div class="fg "><label>Margen % (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="mgMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="mgMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
+    <div class="fg "><label>Semanas de stock (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="wsMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="wsMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
+    <div class="fg "><label>Semana</label><div class="msWrap" id="wWrap"><button class="btn ghost msBtn" type="button">S29 ▾</button><div class="msPanel" id="wPanel"></div></div></div>
+    </div>
+    <div class="filter-row filter-details">
+    <div class="fg "><label>Cliente</label><div class="msWrap" data-f="ret"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg " id="fgTienda"><label>Nombre Sucursal</label><div class="msWrap" data-f="suc"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg filter-group-start"><label>Marca</label><div class="msWrap" data-f="b"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg " id="fgDepto"><label>Departamento Interno</label><div class="msWrap" data-f="dep"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg "><label>Género</label><div class="msWrap" data-f="g"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg filter-group-start"><label>Temporada</label><div class="msWrap" data-f="te"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg "><label>Status</label><div class="msWrap" data-f="st"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg "><label>Duración</label><div class="msWrap" data-f="du"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg filter-group-start" style="justify-content:flex-end"><label>&nbsp;</label><button class="btn ghost" id="btnClear">Limpiar filtros</button></div>
+    </div>
   </div>
 
   <div class="filters" id="tfilters" style="display:none">
-    <div class="fg"><label>Buscar sucursal</label><input type="text" id="tSearch" placeholder="Nombre de sucursal…"></div>
-    <div class="fg"><label>Semana</label><div class="msWrap" data-tf="w"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Cliente</label><div class="msWrap" data-tf="cli"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Tipo Sucursal</label><div class="msWrap" data-tf="t"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Línea</label><div class="msWrap" data-tf="l"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Sucursal</label><div class="msWrap" data-tf="s"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Departamento Interno</label><div class="msWrap" data-tf="d"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Marca</label><div class="msWrap" data-tf="m"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Género</label><div class="msWrap" data-tf="g"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Status</label><div class="msWrap" data-tf="st"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Duración</label><div class="msWrap" data-tf="du"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Temporada</label><div class="msWrap" data-tf="te"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
-    <div class="fg"><label>Rotación % (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="tRotMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="tRotMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
-    <div class="fg"><label>Margen % (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="tMgMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="tMgMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
-    <div class="fg"><label>Semanas de stock (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="tWsMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="tWsMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
-    <div class="fg" style="justify-content:flex-end"><label>&nbsp;</label><button class="btn ghost" id="tClear">Limpiar filtros</button></div>
+    <div class="filter-row filter-priority">
+    <div class="fg filter-search"><label>Buscar sucursal</label><input type="text" id="tSearch" placeholder="Nombre de sucursal…"></div>
+    <div class="fg "><label>Rotación % (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="tRotMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="tRotMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
+    <div class="fg "><label>Margen % (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="tMgMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="tMgMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
+    <div class="fg "><label>Semanas de stock (min – max)</label><div style="display:flex; gap:4px"><input type="number" id="tWsMin" placeholder="min" step="1" style="min-width:0; width:72px"><input type="number" id="tWsMax" placeholder="max" step="1" style="min-width:0; width:72px"></div></div>
+    <div class="fg "><label>Semana</label><div class="msWrap" data-tf="w"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
+    </div>
+    <div class="filter-row filter-details">
+    <div class="fg "><label>Cliente</label><div class="msWrap" data-tf="cli"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg "><label>Tipo Sucursal</label><div class="msWrap" data-tf="t"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg "><label>Sucursal</label><div class="msWrap" data-tf="s"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg filter-group-start"><label>Marca</label><div class="msWrap" data-tf="m"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg "><label>Línea</label><div class="msWrap" data-tf="l"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg "><label>Departamento Interno</label><div class="msWrap" data-tf="d"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg "><label>Género</label><div class="msWrap" data-tf="g"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg filter-group-start"><label>Temporada</label><div class="msWrap" data-tf="te"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg "><label>Status</label><div class="msWrap" data-tf="st"><button class="btn ghost msBtn" type="button">Todos ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg "><label>Duración</label><div class="msWrap" data-tf="du"><button class="btn ghost msBtn" type="button">Todas ▾</button><div class="msPanel"></div></div></div>
+    <div class="fg filter-group-start" style="justify-content:flex-end"><label>&nbsp;</label><button class="btn ghost" id="tClear">Limpiar filtros</button></div>
+    </div>
   </div>
 
   <div id="curva" style="display:none"><iframe id="curvaFrame" title="Curvas de tallas" style="width:100%; height:calc(100vh - 150px); min-height:600px; border:0; border-radius:12px; background:#fff"></iframe></div>
