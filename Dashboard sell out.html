@@ -273,6 +273,7 @@ footer{text-align:center; color:var(--muted); font-size:11.5px; padding:14px}
 .filters #btnClear,.filters #tClear{border:1px solid #7b8ba5;background:#e8eef7;color:#172640}
 @media(max-width:760px){.filters .filter-details .filter-group-start{border-left:0}}
 </style>
+<script src="js/fotos-manuales.js?v=1"></script>
 </head>
 <body>
 <script src="js/acceso.js"></script>
@@ -665,7 +666,7 @@ function weeksAll(){ return Object.keys(ALLDATA[line]); }
 function weeksSel(){ const s = weeksAll().filter(w=>PW.has(w)); return s.length? s : weeksAll(); }
 function primaryWeek(){ const s = weeksSel(); return s[s.length-1]; }
 let DATA = ALLDATA[line][primaryWeek()];
-const IMG = J('IMG');
+const IMG = FotosManuales.combinar(J('IMG'),await FotosManuales.leer());
 // el valor puede ser un id de Google Drive o una foto embebida (data:image/...)
 const imgURL = (m,sz)=>{ const v = IMG[m.toUpperCase()]; return String(v).startsWith('data:')? v
   : String(v).startsWith('img/')? v   /* foto local del repositorio: no pasa por Drive */
