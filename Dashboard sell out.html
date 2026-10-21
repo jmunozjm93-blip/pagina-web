@@ -1086,7 +1086,7 @@ function renderTable(rows){
     {k:'v0', l:METRICS[0], num:1},{k:'v2', l:METRICS[2], num:1},{k:'v1', l:METRICS[1], num:1},{k:'v3', l:METRICS[3], num:1},{k:'v4', l:METRICS[4], num:1},
     {k:'vd', l:'Venta $', num:1}
   ];
-  if(line==='👟 CALZADO') cols.splice(4,0,{k:'suc',l:'Sucursal'},{k:'dep',l:'Departamento Interno'});
+  if(line==='👟 CALZADO') cols.splice(4,0,{k:'dep',l:'Departamento Interno'});
   const val = (p,k)=> k==='ph'? (IMG[p.r.m.toUpperCase()]?1:0)
     : k==='ret'? p.ret
     : k==='vd'? (p.v[5]||0)
@@ -1110,7 +1110,7 @@ function renderTable(rows){
     const wosCls = v[4]!=null? (v[4]<=WOS_OK?'wos-good':'wos-bad') : '';
     const stTag = r.st==='IN LINE'?'inline': r.st==='OUTLET'?'outlet': r.st==='CLOSE OUT'?'closeout':'other';
     const vd = v[5]!=null? v[5] : null;
-    return `<tr class="clickable" data-m="${r.m}" data-ret="${p.ret}"><td class="stick1" title="${r.m}"><strong>${r.m}</strong></td>${photoCell(r.m,'stick2')}<td class="stick3" title="${r.d}">${r.d}</td><td class="stick4" title="${p.ret}">${retChip2(p.ret)}</td>${line==='👟 CALZADO'?`<td>${r.suc||'–'}</td><td>${r.dep||'–'}</td>`:''}<td><span class="tag ${stTag}">${r.st}</span></td><td>${r.du}</td><td>${r.te}</td><td>${r.g}</td><td>${r.b}</td><td class="num">${moneyOr(r.fp)}</td><td class="num">${nf(r.bo)}</td><td class="num">${nf(r.kam)}</td><td class="num">${nf(r.reg)}</td><td>${r.br||'–'}</td>
+    return `<tr class="clickable" data-m="${r.m}" data-ret="${p.ret}"><td class="stick1" title="${r.m}"><strong>${r.m}</strong></td>${photoCell(r.m,'stick2')}<td class="stick3" title="${r.d}">${r.d}</td><td class="stick4" title="${p.ret}">${retChip2(p.ret)}</td>${line==='👟 CALZADO'?`<td>${r.dep||'–'}</td>`:''}<td><span class="tag ${stTag}">${r.st}</span></td><td>${r.du}</td><td>${r.te}</td><td>${r.g}</td><td>${r.b}</td><td class="num">${moneyOr(r.fp)}</td><td class="num">${nf(r.bo)}</td><td class="num">${nf(r.kam)}</td><td class="num">${nf(r.reg)}</td><td>${r.br||'–'}</td>
     <td class="num ${sign(v[0])}"><strong>${fmt(v[0])}</strong></td><td class="num ${mgCls(v[2])}">${fmtP(v[2])}</td><td class="num ${rotCls(v[1])}">${fmtP(v[1])}</td><td class="num">${fmt(v[3])}</td><td class="num ${wosCls}">${fmt1(v[4])}</td>
     <td class="num ${sign(vd)}">${vd!=null?money(vd):'–'}</td></tr>`;
   }).join('');
