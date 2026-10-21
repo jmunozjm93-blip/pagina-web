@@ -43,7 +43,7 @@
   .bar i { display:block; height:100%; width:30%; background:var(--accent); animation:slide 1.2s infinite; }
   @keyframes slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(400%)} }
   #estado { overflow-x:auto; }
-  .estado { display:grid; grid-template-columns:auto repeat(7,1fr); min-width:760px; gap:4px 10px; font-size:.86rem; align-items:center; }
+  .estado { display:grid; grid-template-columns:auto repeat(8,1fr); min-width:760px; gap:4px 10px; font-size:.86rem; align-items:center; }
   #resSemana { background:#0b0d11; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
   #resFile { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; }
   .estado .h { color:var(--muted); }
@@ -106,7 +106,7 @@
   </div>
 </main>
 
-<script src="js/convertir.js?v=agrupado-exacto-42"></script>
+<script src="js/convertir.js?v=resumen-detalle-43"></script>
 <script src="js/github-errores.js?v=1"></script>
 <script>
 const OWNER = 'jmunozjm93-blip', REPO = 'pagina-web', BRANCH = 'main';
@@ -114,8 +114,8 @@ const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
 const el = id => document.getElementById(id);
 const fmt = n => n == null ? '–' : Number(n).toLocaleString('es-CL');
 const money = n => n == null ? '–' : '$' + Math.round(n).toLocaleString('es-CL');
-const ETIQ = { calzado: 'Calzado', ropa: 'Ropa', acc: 'Accesorios', tiendas: 'Tiendas', topsuc: 'Top-5 sucursales', steve: 'Steve Madden', reservas: 'Reservas' };
-const ORDEN = ['calzado', 'ropa', 'acc', 'tiendas', 'topsuc', 'steve', 'reservas'];
+const ETIQ = { calzado_resumen: 'Calzado · Agrupado', calzado: 'Calzado · Sucursales', ropa: 'Ropa', acc: 'Accesorios', tiendas: 'Tiendas', topsuc: 'Top-5 sucursales', steve: 'Steve Madden', reservas: 'Reservas' };
+const ORDEN = ['calzado', 'calzado_resumen', 'ropa', 'acc', 'tiendas', 'topsuc', 'steve', 'reservas'];
 el('repoName').textContent = `${OWNER}/${REPO}`;
 el('names').innerHTML = Convertir.TIPOS.map(t => `<div>${ETIQ[t.tipo]}: <code>${t.etiqueta}</code></div>`).join('');
 
@@ -212,7 +212,7 @@ async function cargarEstado() {
 cargarEstado();
 
 // ---------- archivos ----------
-const worker = new Worker('js/worker-convertir.js?v=agrupado-exacto-42');
+const worker = new Worker('js/worker-convertir.js?v=resumen-detalle-43');
 const pend = {};
 worker.onmessage = e => { const h = pend[e.data.id]; if (h) h(e.data); };
 let seq = 0;
@@ -241,7 +241,7 @@ function procesar(file) {
   if (/^reservas.*\.xlsx$/i.test(file.name)) { procesarReservas(file); return; }
   const info = Convertir.identificar(file.name);
   const c = tarjeta(file, info);
-  if (!info) { setSt(c, 'bad', 'El nombre no corresponde a ninguno de los 5 reportes. Debe ser exactamente uno de los nombres de la lista, con el número de semana (ej. w38).'); return; }
+  if (!info) { setSt(c, 'bad', 'El nombre no corresponde a ninguno de los reportes. Debe ser exactamente uno de los nombres de la lista, con el número de semana (ej. w38).'); return; }
   cola.push({ file, info, c }); siguiente();
 }
 function siguiente() {
@@ -275,6 +275,12 @@ function siguiente() {
       setSt(c, '', 'Subiendo a GitHub…');
       try {
         const path = `data/w${info.semana}/${info.tipo}.json`;
+        if(info.tipo==='calzado'||info.tipo==='calzado_resumen'){
+          const otro=info.tipo==='calzado'?'calzado_resumen':'calzado';
+          const respuesta=await fetch('data/w'+info.semana+'/'+otro+'.json?t='+Date.now(),{cache:'no-store'});
+          if(respuesta.ok && !Convertir.parCompatible(JSON.parse(msg.texto),await respuesta.json())) throw new Error('El resumen y el detalle no coinciden en los totales de Excel. No se ha reemplazado ningún archivo. Revisa que ambos tengan el mismo período y filtros.');
+          if(!respuesta.ok && respuesta.status!==404) throw new Error('No se pudo comprobar el archivo complementario. Intenta nuevamente.');
+        }
         const commit = await subir(path, msg.texto, `Semana ${info.semana}: ${ETIQ[info.tipo]} (${file.name})`);
         setSt(c, '', 'Registrando la semana…');
         await registrar(info.semana, info.tipo);

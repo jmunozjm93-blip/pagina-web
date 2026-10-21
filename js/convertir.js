@@ -7,6 +7,7 @@
 
   // ---------- nombres de archivo ----------
   const TIPOS = [
+    { tipo: 'calzado_resumen', re: /^Reporte de zapatilla SellOut\s*w\s*(\d{1,2})\s+Agru\.*\.xlsx$/i, etiqueta: 'Reporte de zapatilla SellOut wNN Agru.xlsx' },
     { tipo: 'calzado', re: /^Reporte de zapatilla SellOut\s*w\s*(\d{1,2})\.*\.xlsx$/i, etiqueta: 'Reporte de zapatilla SellOut wNN.xlsx' },
     { tipo: 'ropa',    re: /^Reporte de Ropa SellOut\s*w\s*(\d{1,2})\.*\.xlsx$/i,      etiqueta: 'Reporte de Ropa SellOut wNN.xlsx' },
     { tipo: 'acc',     re: /^Reporte de Accesorios SellOut\s*w\s*(\d{1,2})\.*\.xlsx$/i, etiqueta: 'Reporte de Accesorios SellOut WNN.xlsx' },
@@ -470,6 +471,11 @@
   // ---------- punto de entrada ----------
   function convertir(tipo, wb, semana) {
     switch (tipo) {
+      case 'calzado_resumen': {
+        const data=parseLinea(wb,semana);
+        if(Object.values(data).some(s=>s.rows.some(r=>r.suc))) throw new Error('Agru debe tener Nombre Sucursal fuera de las filas de la tabla dinámica.');
+        return data;
+      }
       case 'calzado': case 'ropa': case 'acc': return parseLinea(wb, semana);
       case 'tiendas': return parseTiendas(wb, semana);
       case 'topsuc': return parseTopSuc(wb, semana);
@@ -521,5 +527,27 @@
       return r;
     });
   }
-  global.Convertir = { agruparSinEstimar, TIPOS, identificar, convertir, opcionesLectura, nombresHojas, validarLinea, totalPonderado, rellenar, semanaDelLibro, resumen, agruparSucursales };
+  function parCompatible(a,b){
+    if(!a||!b) return false;
+    const sumas=rows=>{
+      const out=new Map();
+      for(const r of rows) for(const [ret,v] of Object.entries(r.r)){
+        const key=JSON.stringify([r.m,r.dep||'',ret]), total=out.get(key)||[0,0,0];
+        [0,3,5].forEach((j,i)=>total[i]+=v[j]||0);out.set(key,total);
+      }
+      return out;
+    };
+    const names=Object.keys(a);
+    return names.length===Object.keys(b).length && names.every(n=>{
+      if(!b[n]) return false;
+      const ga=a[n].gt,gb=b[n].gt;
+      if(a[n].rows&&b[n].rows){
+        const sa=sumas(a[n].rows),sb=sumas(b[n].rows);
+        if(sa.size!==sb.size||[...sa].some(([k,v])=>!sb.has(k)||v.some((x,i)=>Math.abs(x-sb.get(k)[i])>0.01))) return false;
+      }
+      return Object.keys(ga).length===Object.keys(gb).length && Object.keys(ga).every(k=>
+        gb[k] && ga[k].every((v,i)=>v==null?gb[k][i]==null:typeof v==='number'&&typeof gb[k][i]==='number'&&Math.abs(v-gb[k][i])<=Math.max(0.000001,Math.abs(v)*1e-10)));
+    });
+  }
+  global.Convertir = { parCompatible, agruparSinEstimar, TIPOS, identificar, convertir, opcionesLectura, nombresHojas, validarLinea, totalPonderado, rellenar, semanaDelLibro, resumen, agruparSucursales };
 })(typeof window !== 'undefined' ? window : globalThis);
