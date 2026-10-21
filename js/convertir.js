@@ -499,5 +499,27 @@
       return r;
     });
   }
-  global.Convertir = { TIPOS, identificar, convertir, opcionesLectura, nombresHojas, validarLinea, totalPonderado, rellenar, semanaDelLibro, resumen, agruparSucursales };
+
+  // Solo sumar magnitudes aditivas. Un porcentaje agrupado ausente no se estima.
+  function agruparSinEstimar(rows) {
+    const groups=new Map();
+    for(const row of rows){
+      const key=JSON.stringify([row._w,row.m]);
+      let g=groups.get(key);
+      if(!g){g={ref:{...row},ret:{}};groups.set(key,g);}
+      for(const k of ['suc','dep','d','b','g','st','du','te','fp']) if(g.ref[k]!==row[k]) g.ref[k]=null;
+      for(const [ret,a] of Object.entries(row.r)) (g.ret[ret] ||= []).push(a);
+    }
+    return [...groups.values()].map(g=>{
+      const r={...g.ref,r:{},_rangeFiltered:true};
+      for(const [ret,values] of Object.entries(g.ret)){
+        if(values.length===1){r.r[ret]=[...values[0]];continue;}
+        const sum=i=>{const nums=values.map(a=>a[i]).filter(v=>typeof v==='number'&&Number.isFinite(v));return nums.length?nums.reduce((a,b)=>a+b,0):null;};
+        r.r[ret]=[sum(0),null,null,sum(3),null,sum(5)];
+      }
+      const retailers=Object.keys(r.r);r.br=retailers.length?retailers.reduce((a,b)=>(r.r[b][0]||0)>(r.r[a][0]||0)?b:a):null;
+      return r;
+    });
+  }
+  global.Convertir = { agruparSinEstimar, TIPOS, identificar, convertir, opcionesLectura, nombresHojas, validarLinea, totalPonderado, rellenar, semanaDelLibro, resumen, agruparSucursales };
 })(typeof window !== 'undefined' ? window : globalThis);
