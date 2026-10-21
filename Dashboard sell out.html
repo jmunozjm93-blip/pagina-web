@@ -904,10 +904,6 @@ function filtered(){
   });
   if(FSel.ret.size) rows = rows.filter(r=>Object.keys(r.r).some(k=>FSel.ret.has(k)));
   if(rngActive()) rows = rows.filter(r=>Object.entries(r.r).some(([k,a])=>(!FSel.ret.size||FSel.ret.has(k)) && passRng(a[1],a[2],a[4])));
-  if(line==='👟 CALZADO'){
-    rows=rows.map(r=>({...r,r:Object.fromEntries(Object.entries(r.r).filter(([ret,a])=>(!FSel.ret.size||FSel.ret.has(ret))&&passRng(a[1],a[2],a[4])))})).filter(r=>Object.keys(r.r).length);
-    rows=Convertir.agruparSinEstimar(rows);
-  }
   return rows;
 }
 const pf = id => { const v = el(id).value; return v===''? null : parseFloat(v)/100; };
@@ -1128,7 +1124,7 @@ function renderTable(rows){
     const tr = e.target.closest('tr'); if(!tr) return;
     const mod = tr.getAttribute('data-m'); if(mod) showTopSuc(mod, tr.getAttribute('data-ret'));
   };
-  el('tblCount').textContent = `${pairs.length.toLocaleString('es-CL')} filas (modelo × retail) · ${new Set(rows.map(r=>r.m)).size.toLocaleString('es-CL')} modelos${FSel.ret.size? ' · Retail: '+[...FSel.ret].join(', '):''}${FSel.suc.size? ' · Tienda: '+[...FSel.suc].slice(0,3).join(', ')+(FSel.suc.size>3? ' +'+(FSel.suc.size-3):''):''}`;
+  el('tblCount').textContent = `${pairs.length.toLocaleString('es-CL')} filas del Excel × retail · ${new Set(rows.map(r=>r.m)).size.toLocaleString('es-CL')} modelos${FSel.ret.size? ' · Retail: '+[...FSel.ret].join(', '):''}${FSel.suc.size? ' · Tienda: '+[...FSel.suc].slice(0,3).join(', ')+(FSel.suc.size>3? ' +'+(FSel.suc.size-3):''):''}`;
   el('pgInfo').textContent = `Página ${page} de ${pages}`;
   el('pgPrev').disabled = page<=1; el('pgNext').disabled = page>=pages;
   el('pgPrev').onclick = ()=>{page--; render();}; el('pgNext').onclick = ()=>{page++; render();};
