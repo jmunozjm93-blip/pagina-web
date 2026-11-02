@@ -106,7 +106,7 @@
   </div>
 </main>
 
-<script src="js/convertir.js?v=resumen-detalle-43"></script>
+<script src="js/convertir.js?v=stock-detalle-20261102"></script>
 <script src="js/github-errores.js?v=1"></script>
 <script>
 const OWNER = 'jmunozjm93-blip', REPO = 'pagina-web', BRANCH = 'main';
@@ -212,7 +212,7 @@ async function cargarEstado() {
 cargarEstado();
 
 // ---------- archivos ----------
-const worker = new Worker('js/worker-convertir.js?v=resumen-detalle-43');
+const worker = new Worker('js/worker-convertir.js?v=stock-detalle-20261102');
 const pend = {};
 worker.onmessage = e => { const h = pend[e.data.id]; if (h) h(e.data); };
 let seq = 0;
@@ -275,12 +275,6 @@ function siguiente() {
       setSt(c, '', 'Subiendo a GitHub…');
       try {
         const path = `data/w${info.semana}/${info.tipo}.json`;
-        if(info.tipo==='calzado'||info.tipo==='calzado_resumen'){
-          const otro=info.tipo==='calzado'?'calzado_resumen':'calzado';
-          const respuesta=await fetch('data/w'+info.semana+'/'+otro+'.json?t='+Date.now(),{cache:'no-store'});
-          if(respuesta.ok && !Convertir.parCompatible(JSON.parse(msg.texto),await respuesta.json())) throw new Error('El resumen y el detalle no coinciden en los totales de Excel. No se ha reemplazado ningún archivo. Revisa que ambos tengan el mismo período y filtros.');
-          if(!respuesta.ok && respuesta.status!==404) throw new Error('No se pudo comprobar el archivo complementario. Intenta nuevamente.');
-        }
         const commit = await subir(path, msg.texto, `Semana ${info.semana}: ${ETIQ[info.tipo]} (${file.name})`);
         setSt(c, '', 'Registrando la semana…');
         await registrar(info.semana, info.tipo);

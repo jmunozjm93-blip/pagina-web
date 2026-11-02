@@ -1,5 +1,5 @@
 /* Web Worker: lee el Excel y lo convierte sin congelar la pantalla */
-importScripts('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'fflate.js', 'excel-grande.js', 'convertir.js?v=resumen-detalle-43');
+importScripts('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'fflate.js', 'excel-grande.js', 'convertir.js?v=stock-detalle-20261102');
 
 self.onmessage = function (e) {
   const { id, tipo, semana, buffer } = e.data;

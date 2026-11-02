@@ -527,6 +527,35 @@
       return r;
     });
   }
+  function resumenConStockDetalle(resumen, detalle){
+    const out={},key=(r,ret)=>JSON.stringify([r.m,r.dep||'',ret]);
+    for(const [name,source] of Object.entries(resumen)){
+      const detail=detalle?.[name];
+      if(!detail) throw new Error('Falta la hoja de detalle: '+name);
+      const stocks=new Map(),counts=new Map();
+      for(const r of detail.rows) for(const [ret,a] of Object.entries(r.r)){
+        const k=key(r,ret),entry=stocks.get(k)||{row:r,ret,stock:null};
+        if(typeof a[3]==='number'&&Number.isFinite(a[3])) entry.stock=(entry.stock??0)+a[3];
+        stocks.set(k,entry);
+      }
+      for(const r of source.rows) for(const ret of Object.keys(r.r)) counts.set(key(r,ret),(counts.get(key(r,ret))||0)+1);
+      const rows=source.rows.map(r=>({...r,r:Object.fromEntries(Object.entries(r.r).map(([ret,a])=>{
+        const values=[...a],k=key(r,ret);
+        values[3]=counts.get(k)===1?(stocks.get(k)?.stock??null):null;
+        return [ret,values];
+      }))}));
+      for(const [k,entry] of stocks) if(!counts.has(k)){
+        const row={...entry.row,r:{[entry.ret]:[null,null,null,entry.stock,null,null]}};
+        delete row.suc;rows.push(row);
+      }
+      const gt={};
+      for(const ret of new Set([...Object.keys(source.gt),...Object.keys(detail.gt)])){
+        gt[ret]=[...(source.gt[ret]||Array(6).fill(null))];gt[ret][3]=detail.gt[ret]?.[3]??null;
+      }
+      out[name]={...source,rows,gt,retailers:[...new Set([...source.retailers,...detail.retailers])]};
+    }
+    return out;
+  }
   function parCompatible(a,b){
     if(!a||!b) return false;
     const sumas=rows=>{
@@ -549,5 +578,5 @@
         gb[k] && ga[k].every((v,i)=>v==null?gb[k][i]==null:typeof v==='number'&&typeof gb[k][i]==='number'&&Math.abs(v-gb[k][i])<=Math.max(0.000001,Math.abs(v)*1e-10)));
     });
   }
-  global.Convertir = { parCompatible, agruparSinEstimar, TIPOS, identificar, convertir, opcionesLectura, nombresHojas, validarLinea, totalPonderado, rellenar, semanaDelLibro, resumen, agruparSucursales };
+  global.Convertir = { resumenConStockDetalle, parCompatible, agruparSinEstimar, TIPOS, identificar, convertir, opcionesLectura, nombresHojas, validarLinea, totalPonderado, rellenar, semanaDelLibro, resumen, agruparSucursales };
 })(typeof window !== 'undefined' ? window : globalThis);
