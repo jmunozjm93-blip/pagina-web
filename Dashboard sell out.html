@@ -546,6 +546,8 @@ const REMOTO = { base: 'data/', semanas: {}, cargadas: new Set(), disponibles: [
 const CALZADO_RESUMEN = Object.create(null);
 const RESERVAS_SEMANA = Object.create(null);
 const LINEA_ARCH = { '👟 CALZADO': 'calzado', '👕 ROPA': 'ropa', '🧢 ACC': 'acc' };
+// lineas cuyo reporte puede traer la columna de sucursal
+const LINEAS_CON_TIENDA = new Set(['👟 CALZADO', '👕 ROPA']);
 async function remotoJSON(p){
   const r = await fetch(REMOTO.base + p + '?t=' + Date.now(), { cache: 'no-store' });
   if(!r.ok) throw new Error(`No pude descargar ${p} (${r.status})`);
@@ -797,10 +799,9 @@ document.addEventListener('change', e=>{
   const w = e.target.closest('.msWrap'); if(!w || !w.dataset.f) return;
   const k = w.dataset.f;
   if(e.target.dataset.all) FSel[k].clear();
-  else { if(k==='suc' && line==='👟 CALZADO' && e.target.checked) FSel[k].clear(); e.target.checked? FSel[k].add(e.target.value) : FSel[k].delete(e.target.value); }
+  else { if(k==='suc' && LINEAS_CON_TIENDA.has(line) && e.target.checked) FSel[k].clear(); e.target.checked? FSel[k].add(e.target.value) : FSel[k].delete(e.target.value); }
   renderMs(w); w.querySelector('.msPanel').style.display='block';
   if(k==='ret'){
-    const esCalzado = line === '👟 CALZADO';
     FVALS.suc = opcionesSucursal();
     FSel.suc = new Set([...FSel.suc].filter(s=>FVALS.suc.includes(s)));
     const sw = document.querySelector('.filters .msWrap[data-f=suc]');
@@ -853,7 +854,7 @@ el('xlsPanel').addEventListener('change', e=>{
 el('tabs').onclick = e=>{ const t=e.target.closest('.tab'); if(!t)return; sheet=t.dataset.s; page=1; advFilter=null; if(line!==TLINE) buildFilters(); render(); };
 
 function filasSucursal(){
-  if(line!=='👟 CALZADO') return null;
+  if(!LINEAS_CON_TIENDA.has(line)) return null;
   const idx=Math.max(0,SHEETS.indexOf(sheet)), rows=[];
   for(const w of weeksSel()){
     const d=ALLDATA[line][w], sh=d[Object.keys(d)[idx]];
@@ -872,16 +873,15 @@ function buildFilters(){
   const uniq = k => [...new Set(rows.map(r=>r[k]).filter(Boolean))].sort();
   FVALS.b = uniq('b'); FVALS.g = uniq('g'); FVALS.st = uniq('st'); FVALS.du = uniq('du'); FVALS.te = uniq('te');
   FVALS.ret = DATA[sheet].retailers;
-  const esCalzado = line === '👟 CALZADO';
   // Departamento Interno sale de las propias filas del reporte (exacto al Excel)
   FVALS.dep = uniq('dep');
   el('fgDepto').style.display = FVALS.dep.length? 'flex':'none';
   if(!FVALS.dep.length) FSel.dep.clear();
   const wSuc = sucWeek();
   FVALS.suc = opcionesSucursal();
-  el('fgTienda').style.display = (esCalzado && FVALS.suc.length)? 'flex':'none';
+  el('fgTienda').style.display = (LINEAS_CON_TIENDA.has(line) && FVALS.suc.length)? 'flex':'none';
   if(!FVALS.suc.length) FSel.suc.clear();
-  if(esCalzado && FSel.suc.size) FSel.suc = new Set([...FSel.suc].filter(s=>FVALS.suc.includes(s)));
+  if(LINEAS_CON_TIENDA.has(line) && FSel.suc.size) FSel.suc = new Set([...FSel.suc].filter(s=>FVALS.suc.includes(s)));
   document.querySelectorAll('.msWrap').forEach(w=>{
     const k = w.dataset.f;
     if(!k) return;
@@ -890,8 +890,34 @@ function buildFilters(){
   });
 }
 
+// Ropa, cuando trae detalle por sucursal, se ve agrupada por modelo mientras no
+// se elija tienda; el detalle aparece recien al elegir una. Se agrupa solo la
+// hoja que se esta mirando, para no recorrer el libro entero de golpe.
+const AGRUP = {};
+function agrupadoPorModelo(ln, w){
+  const cache = AGRUP[ln] || (AGRUP[ln] = {});
+  if(w in cache) return cache[w];
+  const d = ALLDATA[ln][w];
+  if(!d) return (cache[w] = null);
+  const hojas = Object.keys(d);
+  if(!hojas.some(n => (d[n].rows||[]).some(r => r.suc))) return (cache[w] = null);
+  const out = {};
+  for(const n of hojas){
+    const src = d[n];
+    const copia = Object.assign({}, src);
+    let hecho = null;
+    Object.defineProperty(copia, 'rows', {
+      get(){ return hecho || (hecho = Convertir.agruparSucursales(src.rows || [])); },
+      enumerable: true, configurable: true
+    });
+    out[n] = copia;
+  }
+  return (cache[w] = out);
+}
 function datosVista(w){
-  return line==='👟 CALZADO' && !FSel.suc.size && CALZADO_RESUMEN[w] ? CALZADO_RESUMEN[w] : ALLDATA[line][w];
+  if(line==='👟 CALZADO') return !FSel.suc.size && CALZADO_RESUMEN[w] ? CALZADO_RESUMEN[w] : ALLDATA[line][w];
+  if(line==='👕 ROPA' && !FSel.suc.size){ const g = agrupadoPorModelo(line, w); if(g) return g; }
+  return ALLDATA[line][w];
 }
 function filtered(){
   const q = el('fSearch').value.trim().toLowerCase();
@@ -904,7 +930,7 @@ function filtered(){
     const sn = Object.keys(LD)[idxSheet];
     if(LD[sn]) base = base.concat(LD[sn].rows);
   }
-  const sucDirecta = line==='👟 CALZADO' && filasSucursal()!==null;
+  const sucDirecta = LINEAS_CON_TIENDA.has(line) && filasSucursal()!==null;
   let rows = base.filter(r=>{
     if(sucDirecta && FSel.suc.size && !FSel.suc.has(r.suc)) return false;
     for(const k of ['b','g','st','du','te','dep']) if(FSel[k].size && !FSel[k].has(r[k])) return false;

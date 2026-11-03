@@ -51,6 +51,11 @@
   // ---------- líneas de producto: calzado / ropa / acc ----------
   const ATTR = { 'modelo': 'm', 'descripcion': 'd', 'preciopubblanco_3': 'fp', 'status': 'st', 'duracion': 'du',
                  'temporada': 'te', 'grupogenero': 'g', 'departamentointerno': 'dep', 'marca': 'b', 'nombresucursal': 'suc' };
+  // la columna de tienda cambia de nombre entre hojas: la hoja del total la llama
+  // "Nombre Sucursal" y la de tienda "Nro Sucursal Nombre" (esta trae el código adelante)
+  for (const alias of ['nrosucursalnombre', 'nrosucursal', 'sucursalnombre',
+                       'sucursal', 'tienda', 'nombretienda', 'nombredesucursal', 'nombredelocal', 'local'])
+    ATTR[alias] = 'suc';
   // posición dentro del arreglo de 6: [vtaUN, rotación, margen, stockActual, semanasStock, vtaNeta]
   const MET = { 'vtaun': 0, 'rotacionun': 1, 'margen': 2, 'stockactualun': 3, 'stkfinalun': 3, 'semanasdestock': 4, 'vtaneta': 5 };
   const HOJAS_RE = [/^w\s*x?\d*\(tienda\+\.com\)$/, /^tiendaw\s*x?\d*$/, /^w\s*x?\d*\.com$/,
