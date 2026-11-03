@@ -938,8 +938,28 @@ function agg(rows, rset){
   if(line==='👟 CALZADO'){
     const values=rows.flatMap(r=>Object.entries(r.r).filter(([k,a])=>(!rset||!rset.size||rset.has(k))&&(r._rangeFiltered||passRng(a[1],a[2],a[4]))).map(([,a])=>a));
     const sum=i=>{const present=values.map(a=>a[i]).filter(v=>typeof v==='number'&&Number.isFinite(v));return present.length?present.reduce((a,b)=>a+b,0):null;};
-    const single=values.length===1?values[0]:[];
-    return {v:sum(0),stk:sum(3),vn:sum(5),rot:single[1]??null,mg:single[2]??null,wos:single[4]??null};
+    // una sola fila: se usan los porcentajes tal cual vienen del Excel
+    if(values.length===1){
+      const a=values[0];
+      return {v:sum(0),stk:sum(3),vn:sum(5),rot:a[1]??null,mg:a[2]??null,wos:a[4]??null};
+    }
+    // varias filas: nunca se promedian porcentajes. Se suman los absolutos y
+    // recien ahi se divide, igual que el Total general del Excel.
+    //   Stk Inicial de cada fila = semanas x venta; si no trae semanas, venta / rotacion;
+    //   y si no vendio, su stock actual.
+    let v=0,si=0,mgW=0,mgV=0;
+    for(const a of values){
+      const pv=a[0]||0, pstk=a[3]||0;
+      v+=pv;
+      if(a[2]!=null&&(a[5]||0)){ mgW+=a[2]*(a[5]||0); mgV+=a[5]||0; }
+      if(a[4]!=null&&pv>0) si+=a[4]*pv;
+      else if(a[1]&&pv>0) si+=pv/a[1];
+      else si+=pstk;
+    }
+    return {v:sum(0),stk:sum(3),vn:sum(5),
+            rot: si? v/si : null,
+            mg: mgV? mgW/mgV : null,
+            wos: v>0? si/v : null};
   }
   // rotación y semanas como la tabla dinámica: Vta total / Stock Inicial total
   // stock inicial por fila: semanas × venta (exacto si hay venta) o stock actual si no vendió
